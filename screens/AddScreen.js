@@ -5,6 +5,7 @@ import { TextInputMask } from "react-native-masked-text";
 import { Button, Menu, Title } from "react-native-paper";
 import styled from "styled-components";
 import Typography from "../typeography";
+import * as FirebaseService from '../shared/FirebaseService';
 
 class AddFunds extends React.Component {
   state = {
@@ -13,7 +14,9 @@ class AddFunds extends React.Component {
     currentCategory: null
   };
 
-  addFunds = () => {};
+  addFunds = () => {
+   
+  };
 
   openMenu = () => this.setState({ visible: true });
 
@@ -102,7 +105,16 @@ const AddCategory = () => {
   const [category, setCategory] = useState(null);
   const [totalBudget, setTotalBudget] = useState(0);
 
-  const addCategory = () => {};
+  const addCategory = () => {
+    FirebaseService
+    .addCategory("Investment", "50", "120")
+    .then((response) => {
+      console.log("Added Funds to Category: " + response)
+    })
+    .catch((e) => {
+      console.log("Error adding funds to category: " + e);
+    });
+  };
 
   return (
     <RootContainer>

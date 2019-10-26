@@ -26,11 +26,7 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-// @connect((store) => {
-//   return {
-//       user: store.user
-//   }
-// })
+connect();
 class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -40,6 +36,8 @@ class HomeScreen extends React.Component {
       visible: false,
       totalBalance: 0
     };
+
+    // this.props.store.dispatch(UserActions.getUser(''));
   }
 
   static navigationOptions = {
