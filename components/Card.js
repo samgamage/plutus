@@ -1,20 +1,24 @@
 import React from "react";
+import { TouchableOpacity } from "react-native";
 import styled from "styled-components";
 
-const Card = props => (
-  <Container>
-    <Cover>
-      <Image source={require("../assets/background2.jpg")} />
-      <Title>Styled Components</Title>
-    </Cover>
-    <Content>
-      <Logo source={require("../assets/logo-react.png")} />
-      <Wrapper>
-        <Caption>React Native</Caption>
-        <Subtitle>5 of 12 sections</Subtitle>
-      </Wrapper>
-    </Content>
-  </Container>
+const Card = ({ navigation, itemId = 1, caption = "", subtitle = "" }) => (
+  <TouchableOpacity
+    onPress={() =>
+      navigation.navigate("Category", {
+        itemId
+      })
+    }
+  >
+    <Container>
+      <Content>
+        <Wrapper>
+          <Caption>{caption}</Caption>
+          <Subtitle>{subtitle}</Subtitle>
+        </Wrapper>
+      </Content>
+    </Container>
+  </TouchableOpacity>
 );
 
 export default Card;
@@ -52,7 +56,7 @@ const Wrapper = styled.View`
 const Container = styled.View`
   background: white;
   width: 315px;
-  height: 280px;
+  height: 100px;
   border-radius: 14px;
   margin-left: 20px;
   margin-top: 20px;

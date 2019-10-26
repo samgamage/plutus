@@ -1,26 +1,56 @@
 import React from "react";
+import { Dimensions, Text, View } from "react-native";
+import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 import styled from "styled-components";
 
-class AddScreen extends React.Component {
-  static navigationOptions = {
-    header: null
+const AddFunds = () => {
+  return (
+    <View>
+      <Input type="number" placeholder="Amount" />
+    </View>
+  );
+};
+
+const AddCategory = () => (
+  <View>
+    <Text>Category</Text>
+  </View>
+);
+
+export default class AddScreen extends React.Component {
+  state = {
+    index: 0,
+    routes: [
+      { key: "funds", title: "Add Funds" },
+      { key: "category", title: "Add Category" }
+    ]
   };
 
   render() {
     return (
-      <Container>
-        <Text>Add Screen</Text>
-      </Container>
+      <TabView
+        navigationState={this.state}
+        renderScene={SceneMap({
+          funds: AddFunds,
+          category: AddCategory
+        })}
+        onIndexChange={index => this.setState({ index })}
+        initialLayout={{ width: Dimensions.get("window").width }}
+        renderTabBar={props => (
+          <TabBar
+            {...props}
+            indicatorStyle={{ backgroundColor: "black" }}
+            style={{ backgroundColor: "black", color: "white" }}
+          />
+        )}
+      />
     );
   }
 }
 
-export default AddScreen;
-
-const Container = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
+const Input = styled.TextInput`
+  border-radius: 5px;
+  border: 1px solid gray;
+  padding: 10px;
+  width: 200px;
 `;
-
-const Text = styled.Text``;
