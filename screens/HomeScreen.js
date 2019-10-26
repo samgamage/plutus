@@ -1,9 +1,11 @@
 import React from "react";
-import { Animated, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Animated, SafeAreaView, ScrollView, Text, View, Button } from "react-native";
 import { connect } from "react-redux";
 import styled from "styled-components";
 import Card from "../components/Card";
 import Container from "../components/Container";
+import * as FirebaseService from '../shared/FirebaseService';
+import * as UserActions from '../redux/actions/UserActions';
 
 function mapStateToProps(state) {
   return { action: state.action, name: state.name };
@@ -18,7 +20,34 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
+// @connect((store) => {
+//   return {
+//       user: store.user.user
+//   }
+// })
+
 class HomeScreen extends React.Component {
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      scale: new Animated.Value(1),
+      opacity: new Animated.Value(1)
+    };
+    // this.checkAuth();
+  }
+
+  checkAuth() {
+    FirebaseService.signInAnonymous()
+      .then(user => {
+        this.props.dispatch(UserActions.setUser(user));
+        console.log("New user dispatched to Redux Store");
+      })
+      .catch((e) => {
+        console.log("Error dispatching new user to Redux Store: " + e);
+      });
+  }
+
   static navigationOptions = {
     headerTitle: () => (
       <View>
@@ -27,12 +56,13 @@ class HomeScreen extends React.Component {
     )
   };
 
-  state = {
-    scale: new Animated.Value(1),
-    opacity: new Animated.Value(1)
-  };
 
-  componentDidUpdate() {}
+
+  testLogin() {
+    UserActions.dispatch()
+  }
+
+  componentDidUpdate() { }
 
   render() {
     return (

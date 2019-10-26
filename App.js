@@ -9,18 +9,6 @@ const initialState = {
   name: ""
 };
 
-// const reducer = (state = initialState, action) => {
-//   switch (action.type) {
-//     // define actions here e.g.,
-//     // case "OPEN_MENU":
-//     //   return { action: "openMenu" };
-//     default:
-//       return state;
-//   }
-// };
-
-// const store = createStore(reducer);
-
 const App = () => (
   <Provider store={store}>
     <AppNavigator />
