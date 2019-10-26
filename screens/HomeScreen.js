@@ -37,9 +37,6 @@ class HomeScreen extends React.Component {
       opacity: new Animated.Value(1)
     };
 
-    FirebaseService.createUserWithEmail();
-    // this.checkAuth();
-    // this.testLogin();
   }
 
   checkAuth() {
@@ -62,10 +59,6 @@ class HomeScreen extends React.Component {
     opacity: new Animated.Value(1),
     categories
   };
-
-  testLogin() {
-    FirebaseService.signInWithEmail();
-  }
 
   componentDidUpdate() { }
 
