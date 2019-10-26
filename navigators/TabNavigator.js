@@ -1,10 +1,12 @@
 import { Feather } from "@expo/vector-icons";
 import React from "react";
+import { createSwitchNavigator } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import AddScreen from "../screens/AddScreen";
 import CategoryScreen from "../screens/CategoryScreen";
 import HomeScreen from "../screens/HomeScreen";
+import LoginScreen from "../screens/LoginScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import Typography from "../typeography";
 
@@ -13,9 +15,20 @@ const HomeStack = createStackNavigator({
   Category: CategoryScreen
 });
 
+const LoginStack = createStackNavigator(
+  {
+    Login: LoginScreen
+  },
+  { tabBarVisible: false }
+);
+
 HomeStack.navigationOptions = ({ navigation }) => {
   var tabBarVisible = true;
   const routeName = navigation.state.routes[navigation.state.index].routeName;
+
+  if (routeName === "Login") {
+    tabBarVisible = false;
+  }
 
   // define which views show navigation bar based on route name
 
@@ -131,4 +144,9 @@ const RootStack = createStackNavigator(
   }
 );
 
-export default RootStack;
+const SwitchNav = createSwitchNavigator({
+  Login: LoginStack,
+  Root: RootStack
+});
+
+export default SwitchNav;
