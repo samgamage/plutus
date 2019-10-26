@@ -22,10 +22,9 @@ function mapDispatchToProps(dispatch) {
 
 // @connect((store) => {
 //   return {
-//       user: store.user.user
+//       user: store.user
 //   }
 // })
-
 class HomeScreen extends React.Component {
 
   constructor(props) {
@@ -34,13 +33,13 @@ class HomeScreen extends React.Component {
       scale: new Animated.Value(1),
       opacity: new Animated.Value(1)
     };
-    // this.checkAuth();
+    this.checkAuth();
   }
 
   checkAuth() {
     FirebaseService.signInAnonymous()
       .then(user => {
-        this.props.dispatch(UserActions.setUser(user));
+        this.props.store.dispatch(UserActions.setUser(user));
         console.log("New user dispatched to Redux Store");
       })
       .catch((e) => {
