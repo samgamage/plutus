@@ -132,10 +132,18 @@ export const addCategoryType = async (categoryType, totalAmount, currentAmount =
         });
 };
 
-// export const addCategoryItem = async (categoryType, currentAmount) => {
-//     firebase.database()
-//     .ref()
-// }
+export const addCategoryItem = async (categoryType, currentAmount) => {
+    let date = this.getCurrentDate();
+    firebase.database()
+    .ref(`ZVD4mxndrXWqLOrDqPmCn99jqoK2/${categoryType}/timestamp/`)
+    .update({date: []})
+    .then((response) => {
+        console.log(`Added item to ${categoryType}`);
+    })
+    .catch((err) => {
+        console.log(`Failed to add item to ${categoryType}: ${err}`);
+    });
+}
 
 export const getCurrentDate = () => {
     let date = new Date()
