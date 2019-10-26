@@ -1,9 +1,9 @@
 import * as firebase from 'firebase';
-// import { GoogleSignin } from 'react-native-google-signin';
+import Expo from 'expo';
+import * as GoogleSignIn from 'expo-google-sign-in';
 
 let user = {}
 
-// const initalizeFirebase = () => {
 const firebaseConfig = {
     apiKey: "AIzaSyBvCXBxbaU6BQ3y2UzF7p9cVa7k2WHQroo",
     authDomain: "plutus-df831.firebaseapp.com",
@@ -12,7 +12,18 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
+
+// try {
+//     await GoogleSignIn.initAsync({ clientId: '<628682985628-06onsm5h1et6ugqgulchgljn3io88j24.apps.googleusercontent.com>' });
+// } catch ({ message }) {
+//     alert('GoogleSignIn.initAsync(): ' + message);
 // }
+
+// await GoogleSignIn.initAsync({ clientId: '<628682985628-06onsm5h1et6ugqgulchgljn3io88j24.apps.googleusercontent.com>' });
+
+
+
 
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
@@ -36,7 +47,8 @@ firebase.auth().onAuthStateChanged((user) => {
 export const signInAnonymous = async () => {
     try {
         const result = await firebase
-            .auth().signInAnonymously()
+            .auth()
+            .signInAnonymously()
             .then(credentials => {
                 if (credential) {
                     console.log('default app user ->', credential.user.toJSON());
@@ -54,23 +66,64 @@ export const signInAnonymous = async () => {
     }
 }
 
-export const signInWithGoogle = async () => {
-    try {
-        // add any configuration settings here:
-        await GoogleSignin.configure();
-
-        const data = await GoogleSignin.signIn();
-
-        // create a new firebase credential with the token
-        const credential = firebase.auth.GoogleAuthProvider.credential(data.idToken, data.accessToken)
-        // login with credential
-        const firebaseUserCredential = await firebase.auth().signInWithCredential(credential);
-
-        console.warn(JSON.stringify(firebaseUserCredential.user.toJSON()));
-    } catch (e) {
-        console.error(e);
+export const signInWithEmail = async (email = 'bob@gmail.com', password='TheQuickBrownFox123') => {
+    try{
+        const result = await firebase
+        .auth()
+        .signInWithEmailAndPassword(email, password)
+        .then(credentials => {
+            if (credential) {
+                console.log('default app user ->', credential.user.toJSON());
+            }
+        })
+        .catch((error) => {
+            let errorCode = error.code;
+            let errorMessage = error.errorMessage
+            console.log(error);
+        });
+    }
+    catch (e) {
+        console.log("Error signing in with email and password: " + e);
     }
 }
+
+export const createUserWithEmail = async (email = 'bob@gmail.com', password='TheQuickBrownFox123') => {
+    try{
+        const result = await firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then(credentials => {
+            if (credential) {
+                console.log('default app user ->', credential.user.toJSON());
+            }
+        })
+        .catch((error) => {
+            let errorCode = error.code;
+            let errorMessage = error.errorMessage
+            console.log(error);
+        });
+    }
+    catch (e) {
+        console.log("Error signing in with email and password: " + e);
+    }
+}
+
+// export const loginWithGoogle = async () => {
+//     try {
+//         await GoogleSignIn.initAsync({ clientId: '<628682985628-06onsm5h1et6ugqgulchgljn3io88j24.apps.googleusercontent.com>' });
+//     } catch ({ message }) {
+//         alert('GoogleSignIn.initAsync(): ' + message);
+//     }
+//     try {
+//         await GoogleSignIn.askForPlayServicesAsync();
+//         const { type, user } = await GoogleSignIn.signInAsync();
+//         if (type === 'success') {
+//             // ...
+//         }
+//     } catch ({ message }) {
+//         alert('login: Error:' + message);
+//     }
+// }
 
 export const signOut = async () => {
     try {

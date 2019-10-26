@@ -2,7 +2,7 @@ import DispatchKeys from '../../const/Dispatch_Keys';
 
 const defaultState = {
     user:{
-
+        uid: ''
     }
 }
 
