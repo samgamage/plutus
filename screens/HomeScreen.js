@@ -23,6 +23,7 @@ class HomeScreen extends React.Component {
     };
 
     console.log("THIS IS THE PROPS: " + JSON.stringify(this.props));
+// FirebaseService.signInWithEmail()
 
     // this.props.dispatch(UserActions.getUser());
 

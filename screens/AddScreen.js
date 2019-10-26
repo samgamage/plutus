@@ -16,12 +16,19 @@ class AddFunds extends React.Component {
       visible: false,
       currentCategory: null
     }
+    FirebaseService.getCurrentDate();
+    this.getCategories();
   }
   state = {
     amount: 0,
     visible: false,
     currentCategory: null
   };
+
+  getCategories = async () => {
+    let categories = await FirebaseService.getAllCategories();
+    console.log("The Kool Catz: " + JSON.stringify(categories));
+  }
 
   addFunds = () => { };
 
