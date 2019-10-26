@@ -2,7 +2,8 @@ import { Feather } from "@expo/vector-icons";
 import accounting from "accounting";
 import { H1 } from "native-base";
 import React from "react";
-import { Animated, FlatList, SafeAreaView, Text } from "react-native";
+import { FlatList, SafeAreaView, Text } from "react-native";
+import CalendarPicker from "react-native-calendar-picker";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { ProgressBar, Title } from "react-native-paper";
 import { connect } from "react-redux";
@@ -34,13 +35,13 @@ class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      scale: new Animated.Value(1),
-      opacity: new Animated.Value(1)
+      categories,
+      selectedStartDate: null
     };
     // this.checkAuth();
   }
 
-  checkAuth() {
+  checkAuth = () => {
     FirebaseService.signInAnonymous()
       .then(user => {
         this.props.dispatch(UserActions.setUser(user));
@@ -49,21 +50,15 @@ class HomeScreen extends React.Component {
       .catch(e => {
         console.log("Error dispatching new user to Redux Store: " + e);
       });
-  }
+  };
 
   static navigationOptions = {
     headerTitle: () => <Text>Plutus</Text>
   };
 
-  state = {
-    scale: new Animated.Value(1),
-    opacity: new Animated.Value(1),
-    categories
-  };
-
-  testLogin() {
+  testLogin = () => {
     UserActions.dispatch();
-  }
+  };
 
   componentDidUpdate() {}
 
@@ -77,12 +72,26 @@ class HomeScreen extends React.Component {
     });
   };
 
+  onDateChange = date => {
+    this.setState({
+      selectedStartDate: date
+    });
+  };
+
   render() {
+    const { selectedStartDate } = this.state;
+    const startDate = selectedStartDate ? selectedStartDate.toString() : "";
+
     return (
       <RootView>
         <Container>
           <SafeAreaView>
             <RootContainer>
+              <CalendarPicker
+                selectedDayColor="#3c4560"
+                selectedDayTextColor="white"
+                onDateChange={this.onDateChange}
+              />
               <SpaceBetween>
                 <H1 style={{ marginBottom: 16 }}>Categories</H1>
                 <TouchableOpacity
