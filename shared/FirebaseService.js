@@ -131,8 +131,9 @@ export const addCategory = async (categoryType, currentAmount, totalAmount) => {
     }
     firebase
     .database()
-    .ref(`${user.uid}/${categoryType}`)
-    .push(newCategory)
+    // .ref(`${user.uid}/${categoryType}`)
+    .ref(`ZVD4mxndrXWqLOrDqPmCn99jqoK2/${categoryType}`)
+    .set(newCategory)
     .then((response) => {
         console.log("Created new Category: " + response);
     })
