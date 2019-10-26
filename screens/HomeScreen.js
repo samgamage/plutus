@@ -8,6 +8,8 @@ import { ProgressBar, Title } from "react-native-paper";
 import { connect } from "react-redux";
 import styled from "styled-components";
 import Container from "../components/Container";
+import * as UserActions from "../redux/actions/UserActions";
+import * as FirebaseService from "../shared/FirebaseService";
 
 function mapStateToProps(state) {
   return { action: state.action, name: state.name };
@@ -22,7 +24,33 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
+// @connect((store) => {
+//   return {
+//       user: store.user.user
+//   }
+// })
+
 class HomeScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      scale: new Animated.Value(1),
+      opacity: new Animated.Value(1)
+    };
+    // this.checkAuth();
+  }
+
+  checkAuth() {
+    FirebaseService.signInAnonymous()
+      .then(user => {
+        this.props.dispatch(UserActions.setUser(user));
+        console.log("New user dispatched to Redux Store");
+      })
+      .catch(e => {
+        console.log("Error dispatching new user to Redux Store: " + e);
+      });
+  }
+
   static navigationOptions = {
     headerTitle: () => <Text>Plutus</Text>
   };
@@ -32,6 +60,10 @@ class HomeScreen extends React.Component {
     opacity: new Animated.Value(1),
     categories
   };
+
+  testLogin() {
+    UserActions.dispatch();
+  }
 
   componentDidUpdate() {}
 

@@ -3,7 +3,7 @@ import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
 import AppNavigator from "./navigators/AppNavigator";
-import Typeography from "./typography";
+import store from "./redux/store";
 
 const initialState = {
   action: "",
