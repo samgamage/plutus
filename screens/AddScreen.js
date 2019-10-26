@@ -4,7 +4,7 @@ import { FlatList, Text, View } from "react-native";
 import { TextInputMask } from "react-native-masked-text";
 import { Button, Menu } from "react-native-paper";
 import styled from "styled-components";
-import Typography from "../typography";
+import Typography from "../typeography";
 
 class AddFunds extends React.Component {
   state = {

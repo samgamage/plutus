@@ -6,7 +6,7 @@ import AddScreen from "../screens/AddScreen";
 import CategoryScreen from "../screens/CategoryScreen";
 import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
-import Typography from "../typography";
+import Typography from "../typeography";
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,
