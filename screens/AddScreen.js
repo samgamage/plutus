@@ -1,6 +1,6 @@
 import { Content, Form, H1, Tab, Tabs } from "native-base";
 import React, { useState } from "react";
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Text, View, Alert } from "react-native";
 import { Button, Menu, Title } from "react-native-paper";
 import styled from "styled-components";
 import MoneyInput from "../components/MoneyInput";
@@ -23,7 +23,7 @@ class AddFunds extends React.Component {
     currentCategory: null
   };
 
-  addFunds = () => {};
+  addFunds = () => { };
 
   openMenu = () => this.setState({ visible: true });
 
@@ -98,6 +98,7 @@ const AddCategory = () => {
   const [category, setCategory] = useState(null);
   const [totalBudget, setTotalBudget] = useState(0);
 
+
   // if (this.state.currentCategory != null && this.state.amount) {
   //   FirebaseService
   //     .addCategory(this.state.currentCategory, this.state.amount, "120")
@@ -111,10 +112,22 @@ const AddCategory = () => {
   // else {
   //   Alert.alert("Please fill out all fields :)");
   // }
-  // const addCategory = () => {
-
-
-  // };
+  const addCategory = () => {
+    if (category && totalBudget) {
+      console.log("TEST: " + category)
+      FirebaseService
+        .addCategoryType(category, totalBudget)
+        .then((response) => {
+          console.log("Added Funds to Category: " + response)
+        })
+        .catch((e) => {
+          console.log("Error adding funds to category: " + e);
+        });
+    }
+    else {
+        Alert.alert("Please fill out all fields :)");
+      }
+  };
 
   return (
     <RootContainer>

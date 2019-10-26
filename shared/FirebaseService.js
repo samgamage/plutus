@@ -114,18 +114,18 @@ export const signOut = async () => {
     }
 };
 
-export const addCategoryType = async (categoryType, totalAmount, currentAmount = null) => {
-    console.log("THe User")
+export const addCategoryType = async (categoryType, totalBudget, currentAmount = null) => {
     let newCategory = {
         "name": categoryType,
         "currentAmount": currentAmount,
-        "totalAmount": totalAmount,
+        "totalBudget": totalBudget,
         "timestamp": []
     }
+    let name = categoryType;
     firebase.database()
         // .ref(`${user.uid}/${categoryType}`)
-        .ref(`ZVD4mxndrXWqLOrDqPmCn99jqoK2/${categoryType}`)
-        .set({ newCategory })
+        .ref(`ZVD4mxndrXWqLOrDqPmCn99jqoK2/categories`)
+        .update({ [categoryType] :newCategory })
         .then((response) => {
             console.log("Created new Category: " + response);
         })
