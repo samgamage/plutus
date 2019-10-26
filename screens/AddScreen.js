@@ -1,11 +1,11 @@
 import { Content, Form, H1, Tab, Tabs } from "native-base";
 import React, { useState } from "react";
 import { FlatList, Text, View } from "react-native";
-import { TextInputMask } from "react-native-masked-text";
 import { Button, Menu, Title } from "react-native-paper";
 import styled from "styled-components";
+import MoneyInput from "../components/MoneyInput";
+import * as FirebaseService from "../shared/FirebaseService";
 import Typography from "../typeography";
-import * as FirebaseService from '../shared/FirebaseService';
 
 class AddFunds extends React.Component {
   constructor(props) {
@@ -17,15 +17,13 @@ class AddFunds extends React.Component {
       currentCategory: null
     }
   }
-  // state = {
-  //   amount: 0,
-  //   visible: false,
-  //   currentCategory: null
-  // };
-
-  addFunds = () => {
-
+  state = {
+    amount: 0,
+    visible: false,
+    currentCategory: null
   };
+
+  addFunds = () => {};
 
   openMenu = () => this.setState({ visible: true });
 
@@ -42,24 +40,10 @@ class AddFunds extends React.Component {
         <Container>
           <Content>
             <H1>Funds</H1>
-            <TextInputMask
-              type={"money"}
+            <MoneyInput
               value={this.state.amount}
-              options={{
-                precision: 2,
-                separator: ".",
-                delimiter: ".",
-                unit: "$",
-                suffixUnit: ""
-              }}
               onChangeText={text => {
                 this.setState({ amount: text });
-              }}
-              style={{
-                padding: 8,
-                backgroundColor: "white",
-                marginTop: 8,
-                borderRadius: 8
               }}
             />
             <H1 style={{ marginTop: 16 }}>Category</H1>
@@ -144,24 +128,10 @@ const AddCategory = () => {
               onChangeText={text => setCategory(text)}
             />
             <Title>Set budget</Title>
-            <TextInputMask
-              type={"money"}
+            <MoneyInput
               value={totalBudget}
-              options={{
-                precision: 2,
-                separator: ".",
-                delimiter: ".",
-                unit: "$",
-                suffixUnit: ""
-              }}
               onChangeText={text => {
                 setTotalBudget(text);
-              }}
-              style={{
-                padding: 8,
-                backgroundColor: "white",
-                marginTop: 8,
-                borderRadius: 8
               }}
             />
             <Button
@@ -218,6 +188,7 @@ const Input = styled.TextInput`
   padding: 10px;
   width: 100%;
   margin-top: 8px;
+  background-color: white;
 `;
 
 const Container = styled.View`

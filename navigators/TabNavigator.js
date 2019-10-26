@@ -4,6 +4,7 @@ import { createSwitchNavigator } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import AddScreen from "../screens/AddScreen";
+import AuthLoading from "../screens/AuthLoading";
 import CategoryScreen from "../screens/CategoryScreen";
 import HomeScreen from "../screens/HomeScreen";
 import LoginScreen from "../screens/LoginScreen";
@@ -144,11 +145,17 @@ const RootStack = createStackNavigator(
   }
 );
 
-const SwitchNav = createSwitchNavigator({
-  // Login: LoginStack,
-  Root: RootStack,
-},{
-  // initialRouteName: RootStack
-});
+const SwitchNav = createSwitchNavigator(
+  {
+    Login: {
+      screen: LoginStack
+    },
+    Root: { screen: RootStack },
+    AuthLoading: { screen: AuthLoading }
+  },
+  {
+    initialRouteName: "AuthLoading"
+  }
+);
 
 export default SwitchNav;
