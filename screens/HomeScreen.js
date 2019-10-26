@@ -23,6 +23,10 @@ class HomeScreen extends React.Component {
       totalBalance: 0
     };
 
+    console.log("THIS IS THE PROPS: " + JSON.stringify(this.props));
+
+    // this.props.dispatch(UserActions.getUser());
+
     // this.props.store.dispatch(UserActions.getUser(''));
   }
 
