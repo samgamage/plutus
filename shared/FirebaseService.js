@@ -1,10 +1,5 @@
 import * as firebase from "firebase";
-
-<<<<<<< HEAD
-export let user = null;
-=======
-let user = null
->>>>>>> a1efebf3bf9314751c39b7186e1915fd35e5ad1e
+import { AsyncStorage } from "react-native";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBvCXBxbaU6BQ3y2UzF7p9cVa7k2WHQroo",
@@ -23,22 +18,22 @@ firebase.initializeApp(firebaseConfig);
 
 // await GoogleSignIn.initAsync({ clientId: '<628682985628-06onsm5h1et6ugqgulchgljn3io88j24.apps.googleusercontent.com>' });
 
-firebase.auth().onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(async user => {
   if (user) {
-    this.user = user;
+    await AsyncStorage.setItem("userToken", JSON.stringify(user));
     console.log("Signed In: " + JSON.stringify(user));
   } else {
-    this.user = null;
-    console.log("User signed out");
+    await AsyncStorage.setItem("userToken", "");
+    console.log("User not signed in");
   }
-  let authPromise = new Promise((resolve, reject) => {
-    if (user) {
-      return Promise.resolve(this.user);
-    } else {
-      return Promise.reject("No User logged in");
-    }
-  });
-  return authPromise;
+  // let authPromise = new Promise((resolve, reject) => {
+  //   if (user) {
+  //     return Promise.resolve(this.user);
+  //   } else {
+  //     return Promise.reject("No User logged in");
+  //   }
+  // });
+  // return authPromise;
 });
 
 export const signInAnonymous = async () => {
@@ -72,15 +67,14 @@ export const signInWithEmail = async (
       .signInWithEmailAndPassword(email, password)
       .then(credentials => {
         if (credentials) {
-          this.user = credentials.user;
-          return true
+          return true;
         }
       })
       .catch(error => {
         let errorCode = error.code;
         let errorMessage = error.errorMessage;
         console.log(error);
-        return false
+        return false;
       });
   } catch (e) {
     console.log("Error signing in with email and password: " + e);
@@ -111,30 +105,27 @@ export const createUserWithEmail = async (
 };
 
 export const signOut = async () => {
-    try {
-        firebase.auth().signOut();
-    }
-    catch (e) {
-        console.log("Error Signing Out: " + e);
-    }
-}
-
+  try {
+    firebase.auth().signOut();
+  } catch (e) {
+    console.log("Error Signing Out: " + e);
+  }
+};
 
 export const addCategory = async (categoryType, currentAmount, totalAmount) => {
-    let newCategory = {
-        "name": categoryType,
-        "currentAmount": currentAmount,
-        "totalAmount": totalAmount
-    }
-    firebase
+  let newCategory = {
+    name: categoryType,
+    currentAmount: currentAmount,
+    totalAmount: totalAmount
+  };
+  firebase
     .database()
     .ref(`${user.uid}/${categoryType}`)
     .push(newCategory)
-    .then((response) => {
-        console.log("Created new Category: " + response);
+    .then(response => {
+      console.log("Created new Category: " + response);
     })
-    .catch((e) => {
-        console.log("Error creating new category: " + e);
+    .catch(e => {
+      console.log("Error creating new category: " + e);
     });
-}
-
+};

@@ -6,27 +6,12 @@ import { AsyncStorage, FlatList, SafeAreaView, Text } from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Button, Modal, Portal, ProgressBar, Title } from "react-native-paper";
-import { connect } from "react-redux";
 import styled from "styled-components";
 import Container from "../components/Container";
 import MoneyInput from "../components/MoneyInput";
 import * as UserActions from "../redux/actions/UserActions";
-import { user } from "../shared/FirebaseService";
+import * as FirebaseService from "../shared/FirebaseService";
 
-function mapStateToProps(state) {
-  return { action: state.action, name: state.name };
-}
-
-function mapDispatchToProps(dispatch) {
-  return {
-    // openMenu: () =>
-    //   dispatch({
-    //     type: "OPEN_MENU"
-    //   })
-  };
-}
-
-connect();
 class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -49,9 +34,6 @@ class HomeScreen extends React.Component {
   };
 
   async componentDidMount() {
-    if (!user) {
-      this.props.navigation.navigate("Login");
-    }
     const isNewUser = await this.isNewUser();
     if (isNewUser === "unseen" || isNewUser === null) {
       this.showModal();
@@ -109,6 +91,14 @@ class HomeScreen extends React.Component {
           <Container>
             <SafeAreaView>
               <RootContainer>
+                <Button
+                  onPress={() => {
+                    FirebaseService.signOut();
+                    this.props.navigation.navigate("AuthLoading");
+                  }}
+                >
+                  Sign out
+                </Button>
                 <CalendarPicker
                   selectedDayColor="#00a86b"
                   selectedDayTextColor="white"
@@ -186,10 +176,7 @@ class HomeScreen extends React.Component {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(HomeScreen);
+export default HomeScreen;
 
 const RootView = styled.View`
   background: black;
