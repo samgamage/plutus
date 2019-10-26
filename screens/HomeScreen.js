@@ -9,6 +9,7 @@ import { Button, Modal, Portal, ProgressBar, Title } from "react-native-paper";
 import styled from "styled-components";
 import Container from "../components/Container";
 import MoneyInput from "../components/MoneyInput";
+import VoiceRecognition from "../components/VoiceRecognition";
 import * as UserActions from "../redux/actions/UserActions";
 import * as FirebaseService from "../shared/FirebaseService";
 
@@ -82,7 +83,6 @@ class HomeScreen extends React.Component {
   };
 
   render() {
-    console.log(this.props);
     const { selectedStartDate } = this.state;
     const startDate = selectedStartDate ? selectedStartDate.toString() : "";
 
@@ -169,6 +169,7 @@ class HomeScreen extends React.Component {
                   </Button>
                 </ModalContainer>
               </Modal>
+              <VoiceRecognition />
             </Portal>
           </Container>
         </RootView>
