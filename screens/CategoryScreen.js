@@ -9,22 +9,8 @@ import {
   TouchableOpacity
 } from "react-native";
 import { BarChart, ContributionGraph } from "react-native-chart-kit";
-import { connect } from "react-redux";
 import styled from "styled-components";
 import uuid from "uuid";
-
-function mapStateToProps(state) {
-  return { action: state.action, name: state.name };
-}
-
-function mapDispatchToProps(dispatch) {
-  return {
-    // openMenu: () =>
-    //   dispatch({
-    //     type: "OPEN_MENU"
-    //   })
-  };
-}
 
 class CategoryScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -122,10 +108,7 @@ class CategoryScreen extends React.Component {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CategoryScreen);
+export default CategoryScreen;
 
 const RootView = styled.View`
   background: white;

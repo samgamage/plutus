@@ -3,6 +3,7 @@ import React from "react";
 import { SafeAreaView } from "react-native";
 import { Button } from "react-native-paper";
 import styled from "styled-components";
+import * as FirebaseService from "../shared/FirebaseService";
 
 class LoginScreen extends React.Component {
   static navigationOptions = {
@@ -16,10 +17,11 @@ class LoginScreen extends React.Component {
   };
 
   onLogin = () => {
-    this.setState({ isSubbmitting: true });
-    // FirebaseService.signInWithEmail(this.state.email, this.state.password);
-    this.props.navigation.navigate("Root");
-    this.setState({ isSubbmitting: false });
+    FirebaseService.signInWithEmail(this.state.email, this.state.password).then(
+      () => {
+        this.props.navigation.navigate("Root");
+      }
+    );
   };
 
   render() {
@@ -29,6 +31,7 @@ class LoginScreen extends React.Component {
           <SafeAreaView>
             <H1 style={{ textAlign: "center" }}>Plutus</H1>
             <Input
+              placeholder="Email"
               autoCompleteType="email"
               value={this.state.email}
               onChangeText={text => this.setState({ email: text })}

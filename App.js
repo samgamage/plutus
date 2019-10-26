@@ -1,8 +1,8 @@
 import React from "react";
 import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
-import { Provider } from "react-redux";
 import AppNavigator from "./navigators/AppNavigator";
-import store from "./redux/store";
+import FirebaseContext from "./shared/FirebaseContext";
+import { firebaseInstance } from "./shared/FirebaseService";
 import Typeography from "./typeography";
 
 const theme = {
@@ -14,12 +14,14 @@ const theme = {
   }
 };
 
-const App = () => (
-  <PaperProvider theme={theme}>
-    <Provider store={store}>
-      <AppNavigator />
-    </Provider>
-  </PaperProvider>
-);
+const App = () => {
+  return (
+    <PaperProvider theme={theme}>
+      <FirebaseContext.Provider value={firebaseInstance}>
+        <AppNavigator />
+      </FirebaseContext.Provider>
+    </PaperProvider>
+  );
+};
 
 export default App;
