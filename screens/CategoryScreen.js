@@ -1,12 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import React from "react";
-import {
-  Animated,
-  SafeAreaView,
-  StatusBar,
-  Text,
-  TouchableOpacity
-} from "react-native";
+import { Animated, SafeAreaView, Text, TouchableOpacity } from "react-native";
 import { connect } from "react-redux";
 import styled from "styled-components";
 
@@ -38,14 +32,9 @@ class CategoryScreen extends React.Component {
     };
   };
 
-  state = {
-    scale: new Animated.Value(1),
-    opacity: new Animated.Value(1)
-  };
+  state = {};
 
-  componentDidMount() {
-    StatusBar.setBarStyle("dark-content", true);
-  }
+  componentDidMount() {}
 
   componentDidUpdate() {}
 

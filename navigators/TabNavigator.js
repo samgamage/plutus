@@ -33,7 +33,7 @@ HomeStack.navigationOptions = ({ navigation }) => {
 };
 
 const AddStack = createStackNavigator({
-  Courses: AddScreen
+  Add: AddScreen
 });
 
 AddStack.navigationOptions = {
