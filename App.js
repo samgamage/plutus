@@ -5,11 +5,6 @@ import AppNavigator from "./navigators/AppNavigator";
 import store from "./redux/store";
 import Typeography from "./typeography";
 
-const initialState = {
-  action: "",
-  name: ""
-};
-
 const theme = {
   ...DefaultTheme,
   colors: {
