@@ -11,7 +11,7 @@ import styled from "styled-components";
 import Container from "../components/Container";
 import MoneyInput from "../components/MoneyInput";
 import * as UserActions from "../redux/actions/UserActions";
-import * as FirebaseService from "../shared/FirebaseService";
+import { user } from "../shared/FirebaseService";
 
 function mapStateToProps(state) {
   return { action: state.action, name: state.name };
@@ -40,19 +40,7 @@ class HomeScreen extends React.Component {
       visible: false,
       totalBalance: 0
     };
-
   }
-
-  checkAuth = () => {
-    FirebaseService.signInAnonymous()
-      .then(user => {
-        this.props.store.dispatch(UserActions.setUser(user));
-        console.log("New user dispatched to Redux Store");
-      })
-      .catch(e => {
-        console.log("Error dispatching new user to Redux Store: " + e);
-      });
-  };
 
   static navigationOptions = {
     headerTitle: () => <Text>Plutus</Text>
@@ -63,6 +51,9 @@ class HomeScreen extends React.Component {
   };
 
   async componentDidMount() {
+    if (!user) {
+      this.props.navigation.navigate("Login");
+    }
     const isNewUser = await this.isNewUser();
     if (isNewUser === "unseen" || isNewUser === null) {
       this.showModal();
