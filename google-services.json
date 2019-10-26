@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "628682985628",
+    "firebase_url": "https://plutus-df831.firebaseio.com",
+    "project_id": "plutus-df831",
+    "storage_bucket": "plutus-df831.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:628682985628:android:30bc7b115e015d8109dd59",
+        "android_client_info": {
+          "package_name": "com.hackgt.plutus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "628682985628-541js19h520d7jhodhfrno7p8qpbo1eu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2ulhtTrwKlSyR4-zpD6dPRB3fEcBo1FA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "628682985628-541js19h520d7jhodhfrno7p8qpbo1eu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

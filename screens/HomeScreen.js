@@ -36,7 +36,10 @@ class HomeScreen extends React.Component {
       scale: new Animated.Value(1),
       opacity: new Animated.Value(1)
     };
-    this.checkAuth();
+
+    FirebaseService.createUserWithEmail();
+    // this.checkAuth();
+    // this.testLogin();
   }
 
   checkAuth() {
@@ -61,10 +64,10 @@ class HomeScreen extends React.Component {
   };
 
   testLogin() {
-    UserActions.dispatch();
+    FirebaseService.signInWithEmail();
   }
 
-  componentDidUpdate() {}
+  componentDidUpdate() { }
 
   onPressAddCategory = () => {
     this.props.navigation.navigate("Add");

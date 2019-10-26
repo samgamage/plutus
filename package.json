@@ -11,6 +11,7 @@
     "accounting": "^0.4.1",
     "expo": "^35.0.0",
     "expo-font": "~7.0.0",
+    "expo-google-sign-in": "^7.0.0",
     "firebase": "^7.2.2",
     "native-base": "^2.13.8",
     "react": "16.8.3",

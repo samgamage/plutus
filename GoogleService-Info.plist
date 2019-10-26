@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>628682985628-06onsm5h1et6ugqgulchgljn3io88j24.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.628682985628-06onsm5h1et6ugqgulchgljn3io88j24</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAJ9P9hqJePBs2kE_udA7vq7C2oV7s_bI0</string>
+	<key>GCM_SENDER_ID</key>
+	<string>628682985628</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.hackgt.plutus</string>
+	<key>PROJECT_ID</key>
+	<string>plutus-df831</string>
+	<key>STORAGE_BUCKET</key>
+	<string>plutus-df831.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:628682985628:ios:98ae9607f54275ce09dd59</string>
+	<key>DATABASE_URL</key>
+	<string>https://plutus-df831.firebaseio.com</string>
+</dict>
+</plist>

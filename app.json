@@ -18,7 +18,17 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "example.expo.googlesignin",
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.628682985628-06onsm5h1et6ugqgulchgljn3io88j24"
+        }
+      }
+    },
+    "android": {
+        "package": "com.hackgt.plutus",
+        "googleServicesFile": "./google-services.json"
     }
   }
 }
