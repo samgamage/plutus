@@ -87,7 +87,7 @@ const Title = styled.Text`
 
 const Name = styled.Text`
   font-size: 20px;
-  color: #3c4560;
+  color: #00a86b;
   font-weight: bold;
 `;
 

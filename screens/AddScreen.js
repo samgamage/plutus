@@ -2,9 +2,10 @@ import { Content, Form, H1, Tab, Tabs } from "native-base";
 import React, { useState } from "react";
 import { FlatList, Text, View } from "react-native";
 import { TextInputMask } from "react-native-masked-text";
-import { Button, Menu } from "react-native-paper";
+import { Button, Menu, Title } from "react-native-paper";
 import styled from "styled-components";
 import Typography from "../typeography";
+import * as FirebaseService from '../shared/FirebaseService';
 
 class AddFunds extends React.Component {
   state = {
@@ -13,7 +14,9 @@ class AddFunds extends React.Component {
     currentCategory: null
   };
 
-  addFunds = () => {};
+  addFunds = () => {
+   
+  };
 
   openMenu = () => this.setState({ visible: true });
 
@@ -57,7 +60,7 @@ class AddFunds extends React.Component {
               anchor={
                 <View>
                   {this.state.currentCategory && (
-                    <Text>Current category: {this.state.currentCategory}</Text>
+                    <Text>Category chosen: {this.state.currentCategory}</Text>
                   )}
                   <Button
                     onPress={this.openMenu}
@@ -86,7 +89,7 @@ class AddFunds extends React.Component {
             <Button
               onPress={this.addFunds}
               style={{ marginTop: 16 }}
-              color="#3c4560"
+              color="#00a86b"
               mode="contained"
             >
               Submit
@@ -100,8 +103,18 @@ class AddFunds extends React.Component {
 
 const AddCategory = () => {
   const [category, setCategory] = useState(null);
+  const [totalBudget, setTotalBudget] = useState(0);
 
-  const addCategory = () => {};
+  const addCategory = () => {
+    FirebaseService
+    .addCategory("Investment", "50", "120")
+    .then((response) => {
+      console.log("Added Funds to Category: " + response)
+    })
+    .catch((e) => {
+      console.log("Error adding funds to category: " + e);
+    });
+  };
 
   return (
     <RootContainer>
@@ -114,10 +127,31 @@ const AddCategory = () => {
               value={category}
               onChangeText={text => setCategory(text)}
             />
+            <Title>Set budget</Title>
+            <TextInputMask
+              type={"money"}
+              value={totalBudget}
+              options={{
+                precision: 2,
+                separator: ".",
+                delimiter: ".",
+                unit: "$",
+                suffixUnit: ""
+              }}
+              onChangeText={text => {
+                setTotalBudget(text);
+              }}
+              style={{
+                padding: 8,
+                backgroundColor: "white",
+                marginTop: 8,
+                borderRadius: 8
+              }}
+            />
             <Button
               onPress={addCategory}
               style={{ marginTop: 16 }}
-              color="#3c4560"
+              color="#00a86b"
               mode="contained"
             >
               Submit

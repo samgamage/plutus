@@ -2,7 +2,7 @@ import * as firebase from 'firebase';
 import Expo from 'expo';
 import * as GoogleSignIn from 'expo-google-sign-in';
 
-let user = {}
+let user = null
 
 const firebaseConfig = {
     apiKey: "AIzaSyBvCXBxbaU6BQ3y2UzF7p9cVa7k2WHQroo",
@@ -67,6 +67,7 @@ export const signInAnonymous = async () => {
 }
 
 export const signInWithEmail = async (email = 'bob@gmail.com', password='TheQuickBrownFox123') => {
+    
     try{
         const result = await firebase
         .auth()
@@ -74,12 +75,14 @@ export const signInWithEmail = async (email = 'bob@gmail.com', password='TheQuic
         .then(credentials => {
             if (credential) {
                 console.log('default app user ->', credential.user.toJSON());
+                return true;
             }
         })
         .catch((error) => {
             let errorCode = error.code;
             let errorMessage = error.errorMessage
             console.log(error);
+            return false;
         });
     }
     catch (e) {
@@ -95,35 +98,20 @@ export const createUserWithEmail = async (email = 'bob@gmail.com', password='The
         .then(credentials => {
             if (credential) {
                 console.log('default app user ->', credential.user.toJSON());
+                return true;
             }
         })
         .catch((error) => {
             let errorCode = error.code;
             let errorMessage = error.errorMessage
             console.log(error);
+            return false;
         });
     }
     catch (e) {
         console.log("Error signing in with email and password: " + e);
     }
 }
-
-// export const loginWithGoogle = async () => {
-//     try {
-//         await GoogleSignIn.initAsync({ clientId: '<628682985628-06onsm5h1et6ugqgulchgljn3io88j24.apps.googleusercontent.com>' });
-//     } catch ({ message }) {
-//         alert('GoogleSignIn.initAsync(): ' + message);
-//     }
-//     try {
-//         await GoogleSignIn.askForPlayServicesAsync();
-//         const { type, user } = await GoogleSignIn.signInAsync();
-//         if (type === 'success') {
-//             // ...
-//         }
-//     } catch ({ message }) {
-//         alert('login: Error:' + message);
-//     }
-// }
 
 export const signOut = async () => {
     try {
@@ -132,5 +120,24 @@ export const signOut = async () => {
     catch (e) {
         console.log("Error Signing Out: " + e);
     }
+}
+
+
+export const addCategory = async (categoryType, currentAmount, totalAmount) => {
+    let newCategory = {
+        "name": categoryType,
+        "currentAmount": currentAmount,
+        "totalAmount": totalAmount
+    }
+    firebase
+    .database()
+    .ref(`${user.uid}/${categoryType}`)
+    .push(newCategory)
+    .then((response) => {
+        console.log("Created new Category: " + response);
+    })
+    .catch((e) => {
+        console.log("Error creating new category: " + e);
+    });
 }
 
