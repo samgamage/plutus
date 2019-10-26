@@ -8,14 +8,23 @@ import Typography from "../typeography";
 import * as FirebaseService from '../shared/FirebaseService';
 
 class AddFunds extends React.Component {
-  state = {
-    amount: 0,
-    visible: false,
-    currentCategory: null
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      amount: 0,
+      visible: false,
+      currentCategory: null
+    }
+  }
+  // state = {
+  //   amount: 0,
+  //   visible: false,
+  //   currentCategory: null
+  // };
 
   addFunds = () => {
-   
+
   };
 
   openMenu = () => this.setState({ visible: true });
@@ -105,16 +114,23 @@ const AddCategory = () => {
   const [category, setCategory] = useState(null);
   const [totalBudget, setTotalBudget] = useState(0);
 
-  const addCategory = () => {
-    FirebaseService
-    .addCategory("Investment", "50", "120")
-    .then((response) => {
-      console.log("Added Funds to Category: " + response)
-    })
-    .catch((e) => {
-      console.log("Error adding funds to category: " + e);
-    });
-  };
+  // if (this.state.currentCategory != null && this.state.amount) {
+  //   FirebaseService
+  //     .addCategory(this.state.currentCategory, this.state.amount, "120")
+  //     .then((response) => {
+  //       console.log("Added Funds to Category: " + response)
+  //     })
+  //     .catch((e) => {
+  //       console.log("Error adding funds to category: " + e);
+  //     });
+  // }
+  // else {
+  //   Alert.alert("Please fill out all fields :)");
+  // }
+  // const addCategory = () => {
+
+
+  // };
 
   return (
     <RootContainer>

@@ -1,10 +1,6 @@
 import * as firebase from "firebase";
 
-<<<<<<< HEAD
-export let user = null;
-=======
 let user = null
->>>>>>> a1efebf3bf9314751c39b7186e1915fd35e5ad1e
 
 const firebaseConfig = {
   apiKey: "AIzaSyBvCXBxbaU6BQ3y2UzF7p9cVa7k2WHQroo",
@@ -26,7 +22,7 @@ firebase.initializeApp(firebaseConfig);
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     this.user = user;
-    console.log("Signed In: " + JSON.stringify(user));
+    // console.log("Signed In: " + JSON.stringify(user));
   } else {
     this.user = null;
     console.log("User signed out");
@@ -121,6 +117,7 @@ export const signOut = async () => {
 
 
 export const addCategory = async (categoryType, currentAmount, totalAmount) => {
+    console.log("THe User")
     let newCategory = {
         "name": categoryType,
         "currentAmount": currentAmount,
@@ -130,7 +127,7 @@ export const addCategory = async (categoryType, currentAmount, totalAmount) => {
     .database()
     // .ref(`${user.uid}/${categoryType}`)
     .ref(`ZVD4mxndrXWqLOrDqPmCn99jqoK2/${categoryType}`)
-    .set(newCategory)
+    .set({newCategory})
     .then((response) => {
         console.log("Created new Category: " + response);
     })

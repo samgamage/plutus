@@ -145,8 +145,10 @@ const RootStack = createStackNavigator(
 );
 
 const SwitchNav = createSwitchNavigator({
-  Login: LoginStack,
-  Root: RootStack
+  // Login: LoginStack,
+  Root: RootStack,
+},{
+  // initialRouteName: RootStack
 });
 
 export default SwitchNav;

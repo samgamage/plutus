@@ -12,21 +12,28 @@ import Container from "../components/Container";
 import MoneyInput from "../components/MoneyInput";
 import * as UserActions from "../redux/actions/UserActions";
 import { user } from "../shared/FirebaseService";
+import Dispatch_Keys from "../const/Dispatch_Keys";
 
 function mapStateToProps(state) {
   return { action: state.action, name: state.name };
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    // openMenu: () =>
-    //   dispatch({
-    //     type: "OPEN_MENU"
-    //   })
-  };
+// function mapDispatchToProps(dispatch) {
+//   return {
+//     openMenu: () =>
+//     // UserActions.getUser,
+//       dispatch({
+//         type: "OPEN_MENU"
+//       })
+//   };
+// }
+
+const mapDispatchToProps = dispatch => {
+  return{
+    setUser: () => dispatch({ type: UserActions.setUser("123")})
+  }
 }
 
-connect();
 class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -36,6 +43,10 @@ class HomeScreen extends React.Component {
       visible: false,
       totalBalance: 0
     };
+
+    console.log("THIS IS THE PROPS: " + JSON.stringify(this.props));
+
+    // this.props.dispatch(UserActions.getUser());
 
     // this.props.store.dispatch(UserActions.getUser(''));
   }
@@ -50,7 +61,7 @@ class HomeScreen extends React.Component {
 
   async componentDidMount() {
     if (!user) {
-      this.props.navigation.navigate("Login");
+      // this.props.navigation.navigate("Login");
     }
     const isNewUser = await this.isNewUser();
     if (isNewUser === "unseen" || isNewUser === null) {
