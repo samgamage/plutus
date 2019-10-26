@@ -8,7 +8,7 @@ const firebaseConfig = {
     storageBucket: "plutus-df831.appspot.com"
 };
 
-firebase.initializeApp(firebaseConfig);
+export const firebaseInstance = firebase.initializeApp(firebaseConfig);
 
 // try {
 //     await GoogleSignIn.initAsync({ clientId: '<628682985628-06onsm5h1et6ugqgulchgljn3io88j24.apps.googleusercontent.com>' });
@@ -18,23 +18,23 @@ firebase.initializeApp(firebaseConfig);
 
 // await GoogleSignIn.initAsync({ clientId: '<628682985628-06onsm5h1et6ugqgulchgljn3io88j24.apps.googleusercontent.com>' });
 
-firebase.auth().onAuthStateChanged(async user => {
-    if (user) {
-        await AsyncStorage.setItem("userToken", JSON.stringify(user));
-        console.log("Signed In: " + JSON.stringify(user));
-    } else {
-        await AsyncStorage.setItem("userToken", "");
-        console.log("User not signed in");
-    }
-    // let authPromise = new Promise((resolve, reject) => {
-    //   if (user) {
-    //     return Promise.resolve(this.user);
-    //   } else {
-    //     return Promise.reject("No User logged in");
-    //   }
-    // });
-    // return authPromise;
-});
+// firebase.auth().onAuthStateChanged(async user => {
+//   if (user) {
+//     await AsyncStorage.setItem("userToken", JSON.stringify(user));
+//     console.log("Signed In: " + JSON.stringify(user));
+//   } else {
+//     await AsyncStorage.setItem("userToken", "");
+//     console.log("User not signed in");
+//   }
+//   // let authPromise = new Promise((resolve, reject) => {
+//   //   if (user) {
+//   //     return Promise.resolve(this.user);
+//   //   } else {
+//   //     return Promise.reject("No User logged in");
+//   //   }
+//   // });
+//   // return authPromise;
+// });
 
 export const signInAnonymous = async () => {
     try {
@@ -61,24 +61,26 @@ export const signInWithEmail = async (
     email = "bob@gmail.com",
     password = "TheQuickBrownFox123"
 ) => {
-    try {
-        const result = await firebase
-            .auth()
-            .signInWithEmailAndPassword(email, password)
-            .then(credentials => {
-                if (credentials) {
-                    return true;
-                }
-            })
-            .catch(error => {
-                let errorCode = error.code;
-                let errorMessage = error.errorMessage;
-                console.log(error);
-                return false;
-            });
-    } catch (e) {
-        console.log("Error signing in with email and password: " + e);
-    }
+  try {
+    await firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(user => {
+        if (user) {
+          AsyncStorage.setItem("userToken", JSON.stringify(user)).then(() => {
+            return true;
+          });
+        }
+      })
+      .catch(error => {
+        let errorCode = error.code;
+        let errorMessage = error.errorMessage;
+        console.log(error);
+        return false;
+      });
+  } catch (e) {
+    console.log("Error signing in with email and password: " + e);
+  }
 };
 
 export const createUserWithEmail = async (

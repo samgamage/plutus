@@ -86,6 +86,7 @@ class HomeScreen extends React.Component {
   };
 
   render() {
+    console.log(this.props);
     const { selectedStartDate } = this.state;
     const startDate = selectedStartDate ? selectedStartDate.toString() : "";
 
