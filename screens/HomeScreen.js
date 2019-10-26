@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import accounting from "accounting";
 import { H1 } from "native-base";
 import React from "react";
-import { FlatList, SafeAreaView, Text } from "react-native";
+import { FlatList, SafeAreaView, Text, Button} from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { ProgressBar, Title } from "react-native-paper";
@@ -25,11 +25,7 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-// @connect((store) => {
-//   return {
-//       user: store.user
-//   }
-// })
+connect()
 class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -37,6 +33,8 @@ class HomeScreen extends React.Component {
       categories,
       selectedStartDate: null
     };
+
+// this.props.store.dispatch(UserActions.getUser(''));
 
   }
 
@@ -86,6 +84,7 @@ class HomeScreen extends React.Component {
         <Container>
           <SafeAreaView>
             <RootContainer>
+              <Button title="test" onPress={() => {FirebaseService.addCategory("Investment")}}></Button>
               <CalendarPicker
                 selectedDayColor="#3c4560"
                 selectedDayTextColor="white"
