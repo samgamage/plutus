@@ -3,18 +3,15 @@ import React from "react";
 import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import AddScreen from "../screens/AddScreen";
+import CategoryScreen from "../screens/CategoryScreen";
 import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import Typography from "../typography";
 
-const HomeStack = createStackNavigator(
-  {
-    Home: HomeScreen
-  },
-  {
-    mode: "modal"
-  }
-);
+const HomeStack = createStackNavigator({
+  Home: HomeScreen,
+  Category: CategoryScreen
+});
 
 HomeStack.navigationOptions = ({ navigation }) => {
   var tabBarVisible = true;
@@ -41,6 +38,11 @@ const AddStack = createStackNavigator({
 
 AddStack.navigationOptions = {
   tabBarLabel: "Add",
+  headerTitle: () => (
+    <View>
+      <Text>Plutus</Text>
+    </View>
+  ),
   tabBarIcon: ({ focused }) => (
     <Feather
       name="plus-circle"
@@ -116,4 +118,17 @@ const TabNavigator = createBottomTabNavigator(
   }
 );
 
-export default TabNavigator;
+const RootStack = createStackNavigator(
+  {
+    Tab: TabNavigator,
+    Home: HomeScreen,
+    Category: CategoryScreen
+  },
+  {
+    defaultNavigationOptions: () => {
+      return { header: null };
+    }
+  }
+);
+
+export default RootStack;

@@ -1,9 +1,14 @@
+import { Feather } from "@expo/vector-icons";
 import React from "react";
-import { Animated, SafeAreaView, ScrollView, Text, View } from "react-native";
+import {
+  Animated,
+  SafeAreaView,
+  StatusBar,
+  Text,
+  TouchableOpacity
+} from "react-native";
 import { connect } from "react-redux";
 import styled from "styled-components";
-import Card from "../components/Card";
-import Container from "../components/Container";
 
 function mapStateToProps(state) {
   return { action: state.action, name: state.name };
@@ -18,13 +23,19 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-class HomeScreen extends React.Component {
-  static navigationOptions = {
-    headerTitle: () => (
-      <View>
-        <Text>Plutus</Text>
-      </View>
-    )
+class CategoryScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => {
+    return {
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: 8 }}
+        >
+          <Feather name="arrow-left" size={24} />
+        </TouchableOpacity>
+      ),
+      headerTitle: () => <Text>Plutus</Text>
+    };
   };
 
   state = {
@@ -32,23 +43,20 @@ class HomeScreen extends React.Component {
     opacity: new Animated.Value(1)
   };
 
+  componentDidMount() {
+    StatusBar.setBarStyle("dark-content", true);
+  }
+
   componentDidUpdate() {}
 
   render() {
     return (
       <RootView>
-        <AnimatedContainer
-          style={{
-            transform: [{ scale: this.state.scale }],
-            opacity: this.state.opacity
-          }}
-        >
+        <Container>
           <SafeAreaView>
-            <ScrollView style={{ height: "100%" }}>
-              <Card navigation={this.props.navigation} caption="Category" />
-            </ScrollView>
+            <Text>Category</Text>
           </SafeAreaView>
-        </AnimatedContainer>
+        </Container>
       </RootView>
     );
   }
@@ -57,10 +65,10 @@ class HomeScreen extends React.Component {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(HomeScreen);
+)(CategoryScreen);
 
 const RootView = styled.View`
-  background: black;
+  background: white;
   flex: 1;
 `;
 
@@ -71,6 +79,13 @@ const Subtitle = styled.Text`
   margin-left: 20px;
   margin-top: 10px;
   text-transform: uppercase;
+`;
+
+const Container = styled.View`
+  flex: 1;
+  background-color: #f0f3f5;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 `;
 
 const AnimatedContainer = Animated.createAnimatedComponent(Container);
