@@ -69,7 +69,7 @@ class ProfileScreen extends React.Component {
                 // dispatch save action
                 this.setState({ isEditing: false });
               }}
-              color="#3c4560"
+              color="#00a86b"
               mode="contained"
               style={{ marginTop: 16, color: "white" }}
             >
@@ -83,7 +83,7 @@ class ProfileScreen extends React.Component {
                   isEditing: !prevState.isEditing
                 }))
               }
-              color="#3c4560"
+              color="#00a86b"
               mode="contained"
               style={{ marginTop: 16, color: "white" }}
             >

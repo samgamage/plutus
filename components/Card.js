@@ -36,7 +36,7 @@ const Logo = styled.Image`
 `;
 
 const Caption = styled.Text`
-  color: #3c4560;
+  color: #00a86b;
   font-size: 20px;
   font-weight: 600;
 `;
