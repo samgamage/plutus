@@ -1,9 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import accounting from "accounting";
 import moment from "moment";
-import { H1, H3 } from "native-base";
+import { H1, H3, Text } from "native-base";
 import React from "react";
-import { AsyncStorage, SafeAreaView, ScrollView, Text } from "react-native";
+import { AsyncStorage, SafeAreaView, ScrollView } from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import {
@@ -32,6 +32,7 @@ class HomeScreen extends React.Component {
     visible: false,
     currentTransactions: null,
     totalBalance: 0,
+    totalBudget: 0,
     user: this.props.firebase.auth().currentUser
   };
 
@@ -52,7 +53,7 @@ class HomeScreen extends React.Component {
     if (typeof categories[0].timestamps === "object") {
       parsedCategories = categories.map(c => {
         const timestamps = [];
-        if (!c) {
+        if (!c || !c.timestamps) {
           return;
         }
         Object.keys(c.timestamps).map(key => {
@@ -71,10 +72,16 @@ class HomeScreen extends React.Component {
       )
     }));
 
+    let totalBudget = 0;
+    parsedCategories.forEach(c =>
+      c.timestamps.forEach(t => (totalBudget += Number(t.amount)))
+    );
+
     this.setState({
       categories: parsedCategories,
       currentTransactions: categoriesWithCurrentDateTransactions,
-      loading: false
+      loading: false,
+      totalBudget
     });
   }
 
@@ -101,9 +108,9 @@ class HomeScreen extends React.Component {
     this.props.navigation.navigate("Add");
   };
 
-  onPressCategory = id => {
+  onPressCategory = category => {
     this.props.navigation.navigate("Category", {
-      id
+      category
     });
   };
 
@@ -137,7 +144,7 @@ class HomeScreen extends React.Component {
   };
 
   render() {
-    const { selectedStartDate, loading } = this.state;
+    const { selectedStartDate, loading, totalBudget } = this.state;
     console.log(selectedStartDate);
 
     if (loading) {
@@ -168,7 +175,9 @@ class HomeScreen extends React.Component {
               <SafeAreaView>
                 <RootContainer>
                   <H1>Your balance: $0</H1>
-                  <Title>Your budget: $0</Title>
+                  <Title>
+                    Your budget: {accounting.formatMoney(totalBudget)}
+                  </Title>
                   <ProgressBar
                     progress={0}
                     style={{ marginTop: 8 }}
@@ -202,9 +211,9 @@ class HomeScreen extends React.Component {
                     <FlatList
                       style={{ flex: 1, marginBottom: 64 }}
                       data={this.state.currentTransactions}
-                      renderItem={({ item }) => (
+                      renderItem={({ item, index }) => (
                         <TouchableOpacity
-                          onPress={() => this.onPressCategory(item.id)}
+                          onPress={() => this.onPressCategory(item)}
                         >
                           <Item>
                             <Title>{item.name}</Title>

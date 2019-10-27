@@ -5,12 +5,12 @@ import {
   Animated,
   Dimensions,
   SafeAreaView,
+  ScrollView,
   Text,
   TouchableOpacity
 } from "react-native";
 import { BarChart, ContributionGraph } from "react-native-chart-kit";
 import styled from "styled-components";
-import uuid from "uuid";
 
 class CategoryScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -28,19 +28,20 @@ class CategoryScreen extends React.Component {
   };
 
   state = {
-    category,
+    category: null,
     labels: [],
     data: [],
-    heatmap: []
+    heatmap: [],
+    loading: true
   };
 
-  componentDidMount() {
-    console.log(this.props.navigation.state.params.id);
-    const labels = Object.keys(category.Food.timestamps);
-    const data = Object.values(category.Food.timestamps);
+  async componentDidMount() {
+    const category = this.props.navigation.state.params.category;
+    const labels = category.timestamps.map(t => t.date);
+    const data = category.timestamps.map(t => t.amount);
     const array = [];
-    Object.keys(category.Food.timestamps).forEach(key => {
-      array.push({ key, value: category.Food.timestamps[key] });
+    category.timestamps.forEach(t => {
+      array.push({ key: t.date, value: t.amount });
     });
     const heatmap = array.reduce((acc, curr, i) => {
       if (typeof acc[curr.key] == "undefined") {
@@ -51,7 +52,7 @@ class CategoryScreen extends React.Component {
 
       return acc;
     }, []);
-    this.setState({ labels, data, heatmap });
+    this.setState({ labels, data, heatmap, category });
   }
 
   componentDidUpdate() {}
@@ -79,29 +80,32 @@ class CategoryScreen extends React.Component {
     return (
       <RootView>
         <Container>
-          <SafeAreaView>
-            <H1 style={{ textAlign: "center", marginBottom: 8 }}>
-              {category.Food.name}
-            </H1>
-            <BarChart
-              data={data}
-              width={Dimensions.get("window").width - 20}
-              height={220}
-              chartConfig={chartConfig}
-              style={{ marginBottom: 8 }}
-            />
-            <H1 style={{ textAlign: "center", marginBottom: 8 }}>
-              Your Activity for {category.Food.name}
-            </H1>
-            <ContributionGraph
-              values={this.state.heatmap}
-              endDate={new Date()}
-              numDays={100}
-              width={Dimensions.get("window").width - 20}
-              height={220}
-              chartConfig={chartConfig}
-            />
-          </SafeAreaView>
+          <ScrollView>
+            <SafeAreaView>
+              <H1 style={{ textAlign: "center", marginBottom: 8 }}>
+                {this.props.navigation.state.params.category.name}
+              </H1>
+              <BarChart
+                data={data}
+                width={Dimensions.get("window").width - 20}
+                height={220}
+                chartConfig={chartConfig}
+                style={{ marginBottom: 8 }}
+              />
+              <H1 style={{ textAlign: "center", marginBottom: 8 }}>
+                Your Financial Activity for{" "}
+                {this.props.navigation.state.params.category.name}
+              </H1>
+              <ContributionGraph
+                values={this.state.heatmap}
+                endDate={new Date()}
+                numDays={100}
+                width={Dimensions.get("window").width - 20}
+                height={220}
+                chartConfig={chartConfig}
+              />
+            </SafeAreaView>
+          </ScrollView>
         </Container>
       </RootView>
     );
@@ -151,18 +155,3 @@ const TitleBar = styled.View`
   margin-top: 50px;
   padding-left: 80px;
 `;
-
-const category = {
-  Food: {
-    name: "Food",
-    id: uuid.v4(),
-    currentAmount: 1200,
-    totalAmount: 2000,
-    timestamps: {
-      "2019-10-13": 20,
-      "2019-10-14": 50,
-      "2019-10-15": 120,
-      "2019-10-16": 120
-    }
-  }
-};

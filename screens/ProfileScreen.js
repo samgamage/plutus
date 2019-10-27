@@ -5,12 +5,6 @@ import styled from "styled-components";
 import { withFirebase } from "../shared/FirebaseContext";
 
 class ProfileScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerTitle: () => <Text>Profile</Text>
-    };
-  };
-
   constructor(props) {
     super(props);
     this.state = {
@@ -96,7 +90,13 @@ class ProfileScreen extends React.Component {
   }
 }
 
-export default withFirebase(ProfileScreen);
+const WrappedComponenent = withFirebase(ProfileScreen);
+
+WrappedComponenent.navigationOptions = {
+  headerTitle: () => <Text>Profile</Text>
+};
+
+export default WrappedComponenent;
 
 const Input = styled.TextInput`
   border-radius: 5px;

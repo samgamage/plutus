@@ -190,21 +190,6 @@ export const getAllCategories = async () => {
   return categoriesArray;
 };
 
-export const getSingleCategoryByID = async index => {
-  let categories = {};
-  let ref = firebase.database().ref(`${user.uid}/categories`);
-  await ref.orderByKey().once("value", snapshot => {
-    let numChildren = snapshot.numChildren();
-    for (let i = 0; i < numChildren; i++) {
-      categories[i] = snapshot.child(i);
-    }
-    console.log(
-      "CATEGORIES: " + JSON.stringify(Object.values(categories), null, 4)
-    );
-    return categories;
-  });
-};
-
 export const getCurrentDate = () => {
   let date = new Date();
   let fullDate = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`;

@@ -1,19 +1,20 @@
+import accounting from "accounting";
 import * as JsSearch from "js-search";
+import { Text } from "native-base";
 import { stemmer } from "porter-stemmer";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Animated, SafeAreaView, Text } from "react-native";
-import { Searchbar } from "react-native-paper";
+import { FlatList, SafeAreaView, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Searchbar, Title } from "react-native-paper";
 import styled from "styled-components";
-import uuid from "uuid";
 import { withFirebase } from "../shared/FirebaseContext";
 import * as FirebaseService from "../shared/FirebaseService";
 
-const SearchScreen = () => {
+const SearchScreen = ({ navigation }) => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [searchResults, setSearchResults] = useState("");
-  const [categories, setCategories] = useState("");
-  const Search = new JsSearch.Search("id");
+  const [searchResults, setSearchResults] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const Search = new JsSearch.Search("name");
   Search.tokenizer = new JsSearch.StemmingTokenizer(
     stemmer,
     new JsSearch.SimpleTokenizer()
@@ -40,6 +41,7 @@ const SearchScreen = () => {
         });
         setCategories(parsedCategories);
         setLoading(false);
+        setSearchResults(parsedCategories);
       }
     };
     asyncFunc();
@@ -47,16 +49,24 @@ const SearchScreen = () => {
 
   const initializeSearch = () => {
     Search.addIndex("name");
-    Search.addIndex("CurrentAmount");
     Search.addDocuments(categories);
   };
 
-  // const search = (q = query) => {
-  //   initializeSearch();
-  //   if (q.length === 0) {
-  //     setSearchResults(categories);
-  //   }
-  // };
+  const search = (q = query) => {
+    initializeSearch();
+    if (q.length === 0 || !q) {
+      setSearchResults(categories);
+      return;
+    }
+    const results = Search.search(q);
+    setSearchResults(results);
+  };
+
+  const onPressCategory = category => {
+    navigation.navigate("Category", {
+      category
+    });
+  };
 
   if (loading) {
     return (
@@ -76,6 +86,8 @@ const SearchScreen = () => {
     );
   }
 
+  console.log(searchResults);
+
   return (
     <RootView>
       <Container>
@@ -83,14 +95,34 @@ const SearchScreen = () => {
           placeholder="Search"
           onChangeText={query => {
             setQuery(query);
+            search(query);
           }}
           value={query}
         />
-        <SafeAreaView>
-          <InnerContainer>
-            <Text>Search results</Text>
-          </InnerContainer>
-        </SafeAreaView>
+        <InnerContainer>
+          <FlatList
+            style={{ flex: 1, marginBottom: 64 }}
+            data={searchResults}
+            renderItem={({ item }) => (
+              <TouchableOpacity onPress={() => onPressCategory(item)}>
+                <Item>
+                  <Title>{item.name}</Title>
+                  <FlatList
+                    data={item.timestamps}
+                    renderItem={({ item }) => (
+                      <SpaceBetween>
+                        <Text>{item.date}</Text>
+                        <Text>{accounting.formatMoney(item.amount)}</Text>
+                      </SpaceBetween>
+                    )}
+                    keyExtractor={(item, i) => item.date + i}
+                  />
+                </Item>
+              </TouchableOpacity>
+            )}
+            keyExtractor={item => item.name}
+          />
+        </InnerContainer>
       </Container>
     </RootView>
   );
@@ -99,7 +131,7 @@ const SearchScreen = () => {
 const WrappedComponent = withFirebase(SearchScreen);
 
 WrappedComponent.navigationOptions = {
-  headerTitle: () => <Text>Plutus</Text>
+  headerTitle: () => <Text>Search</Text>
 };
 
 export default WrappedComponent;
@@ -107,15 +139,6 @@ export default WrappedComponent;
 const RootView = styled.View`
   background: white;
   flex: 1;
-`;
-
-const Subtitle = styled.Text`
-  color: #b8bece;
-  font-weight: 600;
-  font-size: 15px;
-  margin-left: 20px;
-  margin-top: 10px;
-  text-transform: uppercase;
 `;
 
 const InnerContainer = styled.View`
@@ -131,37 +154,15 @@ const Container = styled.View`
   padding: 16px;
 `;
 
-const AnimatedContainer = Animated.createAnimatedComponent(Container);
-
-const Title = styled.Text`
-  font-size: 16px;
-  color: #b8bece;
-  font-weight: 500;
+const SpaceBetween = styled.View`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 `;
 
-const Name = styled.Text`
-  font-size: 20px;
-  color: #00a86b;
-  font-weight: bold;
+const Item = styled.View`
+  margin-bottom: 16px;
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
 `;
-
-const TitleBar = styled.View`
-  width: 100%;
-  margin-top: 50px;
-  padding-left: 80px;
-`;
-
-const category = {
-  Food: {
-    name: "Food",
-    id: uuid.v4(),
-    currentAmount: 1200,
-    totalAmount: 2000,
-    timestamps: {
-      "2019-10-13": 20,
-      "2019-10-14": 50,
-      "2019-10-15": 120,
-      "2019-10-16": 120
-    }
-  }
-};

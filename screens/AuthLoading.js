@@ -1,5 +1,6 @@
 import React from "react";
-import { ActivityIndicator, AsyncStorage, StatusBar, View } from "react-native";
+import { AsyncStorage, StatusBar, View } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
 import { withFirebase } from "../shared/FirebaseContext";
 
 class AuthLoadingScreen extends React.Component {
