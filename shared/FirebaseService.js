@@ -172,6 +172,20 @@ export const addCategoryItem = async (categoryType, currentAmount) => {
 
 export const getAllCategories = async () => {
     let categories = {};
+    let catList = [];
+    let ref = firebase.database().ref(`${user.uid}/categories`);
+        await ref.orderByKey().once("value", (snapshot) => {
+        let numChildren = snapshot.numChildren();
+        for(let i = 0; i < numChildren; i++){
+            categories[i] = snapshot.child(i);
+        }
+        console.log("CATEGORIES: " + JSON.stringify(Object.values(categories),null,4));
+        return Object.values(categories);
+    });
+}
+
+export const getSingleCategoryByID = async (index) => {
+    let categories = {};
     let ref = firebase.database().ref(`${user.uid}/categories`);
         await ref.orderByKey().once("value", (snapshot) => {
         let numChildren = snapshot.numChildren();
