@@ -136,39 +136,24 @@ export const addCategoryType = async (
   totalBudget,
   currentAmount = null
 ) => {
-  let currentList = await this.getAllCategories();
-  console.log("The List: " + currentList);
-
-  let ref = firebase.database().ref(`${user.uid}/categories`);
-  await ref.orderByKey().once("value", snapshot => {
-    let numChildren = snapshot.numChildren();
-    for (let i = 0; i < numChildren; i++) {
-      categories[i] = snapshot.child(i);
-    }
-    console.log("CATEGORIES: " + JSON.stringify(Object.values(categories)));
-  });
-
   let newCategory = {
     name: categoryType,
     currentAmount: currentAmount,
     totalBudget: totalBudget,
     timestamp: []
   };
-
   let name = categoryType;
   firebase
     .database()
     // .ref(`${user.uid}/${categoryType}`)
     .ref(`ZVD4mxndrXWqLOrDqPmCn99jqoK2/categories`)
-    // .push({ [categoryType]: newCategory })
-    .push([newCategory])
+    .update({ [categoryType]: newCategory })
     .then(response => {
       console.log("Created new Category: " + response);
     })
     .catch(e => {
       console.log("Error creating new category: " + e);
     });
-  console.log();
 };
 
 export const addCategoryItem = async (categoryType, currentAmount) => {
@@ -193,16 +178,14 @@ export const getAllCategories = async () => {
     for (let i = 0; i < numChildren; i++) {
       categories[i] = snapshot.child(i);
     }
-    console.log("CATEGORIES: " + JSON.stringify(Object.values(categories)));
-    // console.log("SNAPSHOT: " + snapshot.child("");
-    // categories =
+    console.log(
+      "CATEGORIES: " + JSON.stringify(Object.values(categories), null, 4)
+    );
+    return categories;
   });
-
-  return categories;
 };
 
 export const getCurrentDate = () => {
-  // console.log("THE USER: " + JSON.stringify(user))
   let date = new Date();
   let fullDate = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`;
   return fullDate;
