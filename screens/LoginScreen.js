@@ -1,26 +1,34 @@
+import { Formik } from "formik";
 import { H1 } from "native-base";
 import React from "react";
-import { SafeAreaView, Text } from "react-native";
-import { Button } from "react-native-paper";
+import { AsyncStorage, SafeAreaView, Text } from "react-native";
+import { Button, HelperText } from "react-native-paper";
 import styled from "styled-components";
+import * as Yup from "yup";
+import * as FirebaseService from "../shared/FirebaseService";
+
+const LoginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email("Invalid email")
+    .required("This field is required"),
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("This field is required")
+});
 
 class LoginScreen extends React.Component {
   static navigationOptions = {
     header: null
   };
 
-  state = {
-    email: "",
-    password: "",
-    isSubbmitting: false
-  };
-
-  onLogin = () => {
-    // FirebaseService.signInWithEmail(this.state.email, this.state.password).then(
-    //   () => {
-    this.props.navigation.navigate("Root");
-    //   }
-    // );
+  onLogin = async (email, password) => {
+    FirebaseService.signInWithEmail(email, password).then(user => {
+      console.log(user);
+      if (user) {
+        AsyncStorage.setItem("userToken", JSON.stringify(user.uid));
+        this.props.navigation.navigate("AuthLoading");
+      }
+    });
   };
 
   render() {
@@ -29,26 +37,44 @@ class LoginScreen extends React.Component {
         <RootContainer>
           <SafeAreaView>
             <H1 style={{ textAlign: "center" }}>Plutus</H1>
-            <Input
-              placeholder="Email"
-              autoCompleteType="email"
-              value={this.state.email}
-              onChangeText={text => this.setState({ email: text })}
-            />
-            <Input
-              autoCompleteType="password"
-              value={this.state.password}
-              placeholder="Password"
-              onChangeText={text => this.setState({ password: text })}
-              secureTextEntry={true}
-            />
-            <Button
-              style={{ marginTop: 16 }}
-              onPress={this.onLogin}
-              mode="contained"
+            <Formik
+              initialValues={{ email: "", password: "" }}
+              onSubmit={values => this.onLogin(values.email, values.password)}
+              // validationSchema={LoginSchema}
             >
-              Login
-            </Button>
+              {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                <React.Fragment>
+                  <Input
+                    placeholder="Email"
+                    autoCompleteType="email"
+                    value={values.email}
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
+                  />
+                  <HelperText type="error" visible={errors.email}>
+                    {errors.email}
+                  </HelperText>
+                  <Input
+                    autoCompleteType="password"
+                    value={values.password}
+                    placeholder="Password"
+                    onChangeText={handleChange("password")}
+                    secureTextEntry={true}
+                    onBlur={handleBlur("password")}
+                  />
+                  <HelperText type="error" visible={errors.password}>
+                    {errors.password}
+                  </HelperText>
+                  <Button
+                    style={{ marginTop: 16 }}
+                    onPress={handleSubmit}
+                    mode="contained"
+                  >
+                    Log In
+                  </Button>
+                </React.Fragment>
+              )}
+            </Formik>
             <Text style={{ marginTop: 16 }}>Don't have an account?</Text>
             <Button
               style={{ marginTop: 8 }}

@@ -2,7 +2,8 @@ import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import * as Permissions from "expo-permissions";
 import React from "react";
-import { Animated, Easing, StyleSheet, Text } from "react-native";
+import { Animated, Easing, StyleSheet, Text, View } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 import { FAB, Modal } from "react-native-paper";
 import styled from "styled-components";
 import config from "../config";
@@ -183,9 +184,23 @@ export default class VoiceRecognition extends React.Component {
             }}
           >
             {isRecording && (
-              <Text style={{ color: "white", marginRight: 8 }}>
-                What can I help you with today?
-              </Text>
+              <FlatList
+                keyExtractor={item => item.id + item.message}
+                data={this.state.messages}
+                renderItem={item => (
+                  <View
+                    style={{
+                      backgroundColor: "white",
+                      marginBottom: 16,
+                      marginRight: 8,
+                      padding: 8,
+                      borderRadius: 8
+                    }}
+                  >
+                    <Text>{item.message}</Text>
+                  </View>
+                )}
+              />
             )}
           </AnimatedContainer>
           <FAB
@@ -226,7 +241,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     margin: 16,
     right: 0,
-    bottom: 86,
+    bottom: 48,
     flex: 1,
     alignItems: "center"
   }

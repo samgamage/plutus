@@ -2,6 +2,7 @@ import { Text } from "native-base";
 import React from "react";
 import { Button, TextInput, Title } from "react-native-paper";
 import styled from "styled-components";
+import { withFirebase } from "../shared/FirebaseContext";
 
 class ProfileScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -10,13 +11,17 @@ class ProfileScreen extends React.Component {
     };
   };
 
-  state = {
-    isEditing: false,
-    isSubmitting: false,
-    firstName: "",
-    lastName: "",
-    email: ""
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      isEditing: false,
+      isSubmitting: false,
+      displayName: this.props.firebase.auth().currentUser.displayName || "",
+      email: this.props.firebase.auth().currentUser.email
+    };
+    console.log(this.props.firebase.auth().currentUser.displayName);
+    console.log(this.props.firebase.auth().currentUser.email);
+  }
 
   render() {
     return (
@@ -25,48 +30,43 @@ class ProfileScreen extends React.Component {
           {this.state.isEditing ? (
             <FieldItem>
               <TextInput
-                placeholder={
-                  this.state.firstName.length
-                    ? this.state.firstName
-                    : "First name"
-                }
-                value={this.state.firstName}
-                onChangeText={text => this.setState({ firstName: text })}
+                placeholder={this.state.displayName || "Display name"}
+                value={this.state.displayName}
+                onChangeText={text => this.setState({ displayName: text })}
                 style={{ width: "100%" }}
               />
             </FieldItem>
           ) : (
             <FieldItem>
-              <Title>First name</Title>
-              <Text>first</Text>
+              <Title>Display name</Title>
+              <Text>{this.state.displayName}</Text>
             </FieldItem>
           )}
           {this.state.isEditing ? (
             <FieldItem>
               <TextInput
-                placeholder={
-                  this.state.lastName.length ? this.state.lastName : "Last name"
-                }
-                value={this.state.lastName}
-                onChangeText={text => this.setState({ lastName: text })}
+                placeholder={this.state.email}
+                value={this.state.email}
+                onChangeText={text => this.setState({ email: text })}
                 style={{ width: "100%" }}
               />
             </FieldItem>
           ) : (
             <FieldItem>
-              <Title>Last name</Title>
-              <Text>last</Text>
+              <Title>Email</Title>
+              <Text>{this.state.email}</Text>
             </FieldItem>
           )}
-
-          <FieldItem>
-            <Title>Email</Title>
-            <Text>email</Text>
-          </FieldItem>
           {this.state.isEditing && (
             <Button
-              onPress={() => {
-                // dispatch save action
+              onPress={async () => {
+                await this.props.firebase.auth().currentUser.updateProfile({
+                  displayName: this.state.displayName
+                });
+                await this.props.firebase
+                  .auth()
+                  .currentUser.updateEmail(this.state.email);
+                console.log("Update profile success");
                 this.setState({ isEditing: false });
               }}
               color="#00a86b"
@@ -96,7 +96,7 @@ class ProfileScreen extends React.Component {
   }
 }
 
-export default ProfileScreen;
+export default withFirebase(ProfileScreen);
 
 const Input = styled.TextInput`
   border-radius: 5px;

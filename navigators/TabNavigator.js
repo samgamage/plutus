@@ -32,7 +32,7 @@ const SignUpStack = createStackNavigator(
 );
 
 HomeStack.navigationOptions = ({ navigation }) => {
-  var tabBarVisible = true;
+  const tabBarVisible = true;
   const routeName = navigation.state.routes[navigation.state.index].routeName;
 
   if (routeName === "Login") {
@@ -43,7 +43,7 @@ HomeStack.navigationOptions = ({ navigation }) => {
 
   return {
     tabBarVisible,
-    tabBarLabel: "Home",
+    headerTitle: () => <Text>Plutus</Text>,
     tabBarIcon: ({ focused }) => (
       <Feather
         name="grid"
@@ -60,11 +60,7 @@ const AddStack = createStackNavigator({
 
 AddStack.navigationOptions = {
   tabBarLabel: "Add",
-  headerTitle: () => (
-    <View>
-      <Text>Plutus</Text>
-    </View>
-  ),
+  headerTitle: () => <Text>Plutus</Text>,
   tabBarIcon: ({ focused }) => (
     <Feather
       name="plus-circle"

@@ -2,7 +2,13 @@ import { Feather } from "@expo/vector-icons";
 import accounting from "accounting";
 import { H1, H3 } from "native-base";
 import React from "react";
-import { AsyncStorage, FlatList, SafeAreaView, Text } from "react-native";
+import {
+  AsyncStorage,
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  Text
+} from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Button, Modal, Portal, ProgressBar, Title } from "react-native-paper";
@@ -11,27 +17,32 @@ import Container from "../components/Container";
 import MoneyInput from "../components/MoneyInput";
 import VoiceRecognition from "../components/VoiceRecognition";
 import * as UserActions from "../redux/actions/UserActions";
+import { withFirebase } from "../shared/FirebaseContext";
 import * as FirebaseService from "../shared/FirebaseService";
 
 class HomeScreen extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      categories,
-      selectedStartDate: null,
-      visible: false,
-      totalBalance: 0
-    };
+  // static navigationOptions = ({ navigation, screenProps }) => {
+  //   return {
+  //     headerTitle: () => <Text>Plutus</Text>,
+  //     headerLeft: () => (
+  //       <TouchableOpacity
+  //         onPress={async () => {
+  //           await FirebaseService.signOut();
+  //           navigation.navigate("AuthLoading");
+  //         }}
+  //       >
+  //         <Feather name="log-out" size={24} />
+  //       </TouchableOpacity>
+  //     )
+  //   };
+  // };
 
-    console.log("THIS IS THE PROPS: " + JSON.stringify(this.props));
-
-    // this.props.dispatch(UserActions.getUser());
-
-    // this.props.store.dispatch(UserActions.getUser(''));
-  }
-
-  static navigationOptions = {
-    headerTitle: () => <Text>Plutus</Text>
+  state = {
+    categories,
+    selectedStartDate: null,
+    visible: false,
+    totalBalance: 0,
+    user: this.props.firebase.auth().currentUser
   };
 
   testLogin = () => {
@@ -40,7 +51,7 @@ class HomeScreen extends React.Component {
 
   async componentDidMount() {
     const isNewUser = await this.isNewUser();
-    if (isNewUser === "unseen" || isNewUser === null) {
+    if (isNewUser === "unseen" || !isNewUser) {
       this.showModal();
     }
   }
@@ -92,97 +103,114 @@ class HomeScreen extends React.Component {
 
     return (
       <React.Fragment>
-        <RootView>
-          <Container>
-            <SafeAreaView>
-              <RootContainer>
-                <Button
-                  onPress={() => {
-                    FirebaseService.signOut();
-                    this.props.navigation.navigate("AuthLoading");
-                  }}
-                >
-                  Sign out
-                </Button>
-                <CalendarPicker
-                  selectedDayColor="#00a86b"
-                  selectedDayTextColor="white"
-                  onDateChange={this.onDateChange}
-                />
-                <SpaceBetween>
-                  <H1 style={{ marginBottom: 16 }}>Categories</H1>
-                  <TouchableOpacity
-                    onPress={this.onPressAddCategory}
-                    style={{
-                      margin: "auto",
-                      display: "flex",
-                      alignItems: "center"
-                    }}
-                  >
-                    <Feather name="plus-circle" size={24} />
-                  </TouchableOpacity>
-                </SpaceBetween>
-                <FlatList
-                  data={this.state.categories}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      onPress={() => this.onPressCategory(item.id)}
-                    >
-                      <Item>
-                        <Title>{item.name}</Title>
-                        <Text>
-                          {accounting.formatMoney(item.currentAmount)} /{" "}
-                          {accounting.formatMoney(item.totalAmount)}
-                        </Text>
-                        <ProgressBar
-                          progress={item.currentAmount / item.totalAmount}
-                          color="#00a86b"
-                          style={{ marginTop: 8 }}
-                        />
-                      </Item>
-                    </TouchableOpacity>
-                  )}
-                  keyExtractor={item => item.id}
-                />
-              </RootContainer>
-            </SafeAreaView>
-            <Portal>
-              <Modal visible={this.state.visible} dismissable={true}>
-                <ModalContainer>
-                  <H1>Thanks for joing Plutus!</H1>
-                  <Text style={{ marginBottom: 8 }}>
-                    Before we let you free, we need some more information to get
-                    started.
-                  </Text>
-                  <H3 style={{ marginBottom: 8 }}>
-                    How much do money do you currently have in your checking
-                    account?
-                  </H3>
-                  <MoneyInput
-                    value={this.state.totalBalance}
-                    onChangeText={text => {
-                      this.setState({ totalBalance: text });
-                    }}
+        <ScrollView>
+          <RootView>
+            <Container>
+              <SafeAreaView>
+                <RootContainer>
+                  <CalendarPicker
+                    selectedDayColor="#00a86b"
+                    selectedDayTextColor="white"
+                    onDateChange={this.onDateChange}
                   />
-                  <Button
-                    style={{ marginTop: 16 }}
-                    onPress={this.onModalFormSubmit}
-                    mode="contained"
-                  >
-                    Submit
-                  </Button>
-                </ModalContainer>
-              </Modal>
-              <VoiceRecognition />
-            </Portal>
-          </Container>
-        </RootView>
+                  <SpaceBetween>
+                    <H1 style={{ marginBottom: 16 }}>Categories</H1>
+                    <TouchableOpacity
+                      onPress={this.onPressAddCategory}
+                      style={{
+                        margin: "auto",
+                        display: "flex",
+                        alignItems: "center"
+                      }}
+                    >
+                      <Feather name="plus-circle" size={24} />
+                    </TouchableOpacity>
+                  </SpaceBetween>
+                  <ScrollView>
+                    <FlatList
+                      style={{ flex: 1, marginBottom: 64 }}
+                      data={this.state.categories}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity
+                          onPress={() => this.onPressCategory(item.id)}
+                        >
+                          <Item>
+                            <Title>{item.name}</Title>
+                            <Text>
+                              {accounting.formatMoney(item.currentAmount)} /{" "}
+                              {accounting.formatMoney(item.totalAmount)}
+                            </Text>
+                            <ProgressBar
+                              progress={item.currentAmount / item.totalAmount}
+                              color="#00a86b"
+                              style={{ marginTop: 8 }}
+                            />
+                          </Item>
+                        </TouchableOpacity>
+                      )}
+                      keyExtractor={item => item.id}
+                    />
+                  </ScrollView>
+                </RootContainer>
+                <Portal>
+                  <Modal visible={this.state.visible} dismissable={true}>
+                    <ModalContainer>
+                      <H1>Thanks for joing Plutus!</H1>
+                      <Text style={{ marginBottom: 8 }}>
+                        Before we let you free, we need some more information to
+                        get started.
+                      </Text>
+                      <H3 style={{ marginBottom: 8 }}>
+                        How much do money do you currently have in your checking
+                        account?
+                      </H3>
+                      <MoneyInput
+                        value={this.state.totalBalance}
+                        onChangeText={text => {
+                          this.setState({ totalBalance: text });
+                        }}
+                      />
+                      <Button
+                        style={{ marginTop: 16 }}
+                        onPress={this.onModalFormSubmit}
+                        mode="contained"
+                      >
+                        Submit
+                      </Button>
+                    </ModalContainer>
+                  </Modal>
+                </Portal>
+              </SafeAreaView>
+            </Container>
+          </RootView>
+        </ScrollView>
+        <VoiceRecognition />
       </React.Fragment>
     );
   }
 }
 
-export default HomeScreen;
+const WrappedComponent = withFirebase(HomeScreen);
+
+WrappedComponent.navigationOptions = ({ navigation }) => {
+  return {
+    headerTitle: () => <Text>Plutus</Text>,
+    headerLeft: () => (
+      <TouchableOpacity
+        onPress={async () => {
+          await AsyncStorage.setItem("userToken", "");
+          await FirebaseService.signOut();
+          navigation.navigate("AuthLoading");
+        }}
+        style={{ marginLeft: 16 }}
+      >
+        <Feather name="log-out" size={24} />
+      </TouchableOpacity>
+    )
+  };
+};
+
+export default WrappedComponent;
 
 const RootView = styled.View`
   background: black;
