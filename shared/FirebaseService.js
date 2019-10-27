@@ -1,4 +1,5 @@
 import * as firebase from "firebase";
+import { AsyncStorage } from "react-native";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBvCXBxbaU6BQ3y2UzF7p9cVa7k2WHQroo",
@@ -8,40 +9,41 @@ const firebaseConfig = {
 };
 
 export const firebaseInstance = firebase.initializeApp(firebaseConfig);
-user = {
-  uid: "ZVD4mxndrXWqLOrDqPmCn99jqoK2",
-  displayName: null,
-  photoURL: null,
-  email: "bob@gmail.com",
-  emailVerified: false,
-  phoneNumber: null,
-  isAnonymous: false,
-  tenantId: null,
-  providerData: [
-    {
-      uid: "bob@gmail.com",
-      displayName: null,
-      photoURL: null,
-      email: "bob@gmail.com",
-      phoneNumber: null,
-      providerId: "password"
-    }
-  ],
-  apiKey: "AIzaSyBvCXBxbaU6BQ3y2UzF7p9cVa7k2WHQroo",
-  appName: "[DEFAULT]",
-  authDomain: "plutus-df831.firebaseapp.com",
-  stsTokenManager: {
-    apiKey: "AIzaSyBvCXBxbaU6BQ3y2UzF7p9cVa7k2WHQroo",
-    refreshToken:
-      "AEu4IL1rJQsLZ3fVLCsVze3ZSsQsqG5Ay5Q9TVFXIqq3jKVimv9IxkVaARtxbONwB7XLeRJ_EL58Ym7GqJ6UjC3-SrQrSJStdp8jCZ70qQ-Xs3NzcSlRroUfi5gte0ayO4QrG_pp3ObDUP4yJZYQA9bLtZV_zoZL80LvfhEbqdBMvQ85DE3WW5jyCNGvVx19nUhFRlcn-UoV",
-    accessToken:
-      "eyJhbGciOiJSUzI1NiIsImtpZCI6ImEwYjQwY2NjYmQ0OWQxNmVkMjg2MGRiNzIyNmQ3NDZiNmZhZmRmYzAiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vcGx1dHVzLWRmODMxIiwiYXVkIjoicGx1dHVzLWRmODMxIiwiYXV0aF90aW1lIjoxNTcyMTI3MjA0LCJ1c2VyX2lkIjoiWlZENG14bmRyWFdxTE9yRHFQbUNuOTlqcW9LMiIsInN1YiI6IlpWRDRteG5kclhXcUxPckRxUG1Dbjk5anFvSzIiLCJpYXQiOjE1NzIxMjcyMDQsImV4cCI6MTU3MjEzMDgwNCwiZW1haWwiOiJib2JAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImJvYkBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.doVRX_gHFidrYK2gFh4Nqh8Ct6syF4Dh45TIRjFK-CMblTzLd426x1GBrxarwAll3FP4tFE7pQ4QHvqtDIFxq6XcFqY7NF8QepxapIdivmY3k_PrqIXWoYlTQMGOCUi5L3mSc5L61wokIzhauT2AbmynZAHh-dAwevRxeKoYNd-6T9E0R8k1ox5x-z5eZ_ZGYydSNNeCqBjh_th60sWPG0QAmF_IY-4VoEObxxt-fPkrDXjie7VU5RLxzuwLdxlL99RHI7TFB3DEaLWszxZoBniAFMmb6IZjObmUJIfLm_mRq7f3aBxafqxMlcfk5b4JXkselpUHN4R7asO3_qCzoQ",
-    expirationTime: 1572130802603
-  },
-  redirectEventId: null,
-  lastLoginAt: "1572127204839",
-  createdAt: "1572102119291"
-};
+
+// user = {
+//   uid: "ZVD4mxndrXWqLOrDqPmCn99jqoK2",
+//   displayName: null,
+//   photoURL: null,
+//   email: "bob@gmail.com",
+//   emailVerified: false,
+//   phoneNumber: null,
+//   isAnonymous: false,
+//   tenantId: null,
+//   providerData: [
+//     {
+//       uid: "bob@gmail.com",
+//       displayName: null,
+//       photoURL: null,
+//       email: "bob@gmail.com",
+//       phoneNumber: null,
+//       providerId: "password"
+//     }
+//   ],
+//   apiKey: "AIzaSyBvCXBxbaU6BQ3y2UzF7p9cVa7k2WHQroo",
+//   appName: "[DEFAULT]",
+//   authDomain: "plutus-df831.firebaseapp.com",
+//   stsTokenManager: {
+//     apiKey: "AIzaSyBvCXBxbaU6BQ3y2UzF7p9cVa7k2WHQroo",
+//     refreshToken:
+//       "AEu4IL1rJQsLZ3fVLCsVze3ZSsQsqG5Ay5Q9TVFXIqq3jKVimv9IxkVaARtxbONwB7XLeRJ_EL58Ym7GqJ6UjC3-SrQrSJStdp8jCZ70qQ-Xs3NzcSlRroUfi5gte0ayO4QrG_pp3ObDUP4yJZYQA9bLtZV_zoZL80LvfhEbqdBMvQ85DE3WW5jyCNGvVx19nUhFRlcn-UoV",
+//     accessToken:
+//       "eyJhbGciOiJSUzI1NiIsImtpZCI6ImEwYjQwY2NjYmQ0OWQxNmVkMjg2MGRiNzIyNmQ3NDZiNmZhZmRmYzAiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vcGx1dHVzLWRmODMxIiwiYXVkIjoicGx1dHVzLWRmODMxIiwiYXV0aF90aW1lIjoxNTcyMTI3MjA0LCJ1c2VyX2lkIjoiWlZENG14bmRyWFdxTE9yRHFQbUNuOTlqcW9LMiIsInN1YiI6IlpWRDRteG5kclhXcUxPckRxUG1Dbjk5anFvSzIiLCJpYXQiOjE1NzIxMjcyMDQsImV4cCI6MTU3MjEzMDgwNCwiZW1haWwiOiJib2JAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImJvYkBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.doVRX_gHFidrYK2gFh4Nqh8Ct6syF4Dh45TIRjFK-CMblTzLd426x1GBrxarwAll3FP4tFE7pQ4QHvqtDIFxq6XcFqY7NF8QepxapIdivmY3k_PrqIXWoYlTQMGOCUi5L3mSc5L61wokIzhauT2AbmynZAHh-dAwevRxeKoYNd-6T9E0R8k1ox5x-z5eZ_ZGYydSNNeCqBjh_th60sWPG0QAmF_IY-4VoEObxxt-fPkrDXjie7VU5RLxzuwLdxlL99RHI7TFB3DEaLWszxZoBniAFMmb6IZjObmUJIfLm_mRq7f3aBxafqxMlcfk5b4JXkselpUHN4R7asO3_qCzoQ",
+//     expirationTime: 1572130802603
+//   },
+//   redirectEventId: null,
+//   lastLoginAt: "1572127204839",
+//   createdAt: "1572102119291"
+// };
 
 export const getUser = user => {};
 
@@ -61,7 +63,7 @@ export const signInAnonymous = async () => {
       .auth()
       .signInAnonymously()
       .then(credentials => {
-        if (credential) {
+        if (credentials) {
           console.log("default app user ->", credential.user.toJSON());
         }
       })
@@ -134,7 +136,7 @@ export const signOut = async () => {
 export const addCategoryType = async (
   categoryType,
   totalBudget,
-  currentAmount = null
+  currentAmount = 0
 ) => {
   let newCategory = {
     name: categoryType,
@@ -142,11 +144,12 @@ export const addCategoryType = async (
     totalBudget: totalBudget,
     timestamp: []
   };
+  const userId = JSON.parse(await AsyncStorage.getItem("userToken"));
   let name = categoryType;
   firebase
     .database()
     // .ref(`${user.uid}/${categoryType}`)
-    .ref(`ZVD4mxndrXWqLOrDqPmCn99jqoK2/categories`)
+    .ref(`${userId}/categories`)
     .update({ [categoryType]: newCategory })
     .then(response => {
       console.log("Created new Category: " + response);
@@ -157,10 +160,11 @@ export const addCategoryType = async (
 };
 
 export const addCategoryItem = async (categoryType, currentAmount) => {
+  const userId = JSON.parse(await AsyncStorage.getItem("userToken"));
   let date = this.getCurrentDate();
   firebase
     .database()
-    .ref(`ZVD4mxndrXWqLOrDqPmCn99jqoK2/${categoryType}/timestamp/`)
+    .ref(`${userId}/${categoryType}/timestamp/`)
     .update({ date: [] })
     .then(response => {
       console.log(`Added item to ${categoryType}`);
@@ -171,9 +175,10 @@ export const addCategoryItem = async (categoryType, currentAmount) => {
 };
 
 export const getAllCategories = async () => {
+  const userId = JSON.parse(await AsyncStorage.getItem("userToken"));
   let categories = {};
   let catList = [];
-  let ref = firebase.database().ref(`${user.uid}/categories`);
+  let ref = firebase.database().ref(`${userId}/categories`);
   let categoriesArray = [];
   await ref.orderByKey().once("value", snapshot => {
     let numChildren = snapshot.numChildren();
@@ -185,7 +190,6 @@ export const getAllCategories = async () => {
     // );
     // return Object.values(categories);
     categoriesArray = Object.values(categories);
-    console.log(categoriesArray);
   });
   return categoriesArray;
 };

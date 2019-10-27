@@ -46,11 +46,17 @@ class HomeScreen extends React.Component {
       this.showModal();
     }
     const c = await FirebaseService.getAllCategories();
-    const categories = JSON.parse(JSON.stringify(c));
+    const categories = JSON.parse(JSON.stringify(c)) || [];
 
+    console.log(categories);
     let parsedCategories = categories;
 
-    if (typeof categories[0].timestamps === "object") {
+    if (
+      categories &&
+      typeof categories === "array" &&
+      categories.length > 0 &&
+      typeof categories[0].timestamps === "object"
+    ) {
       parsedCategories = categories.map(c => {
         const timestamps = [];
         if (!c || !c.timestamps) {

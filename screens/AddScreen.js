@@ -1,8 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { Formik } from "formik";
 import { Content, Form, Tab, Tabs } from "native-base";
-import React, { useState } from "react";
-import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { Button, HelperText, Menu, Title } from "react-native-paper";
 import styled from "styled-components";
 import * as Yup from "yup";
@@ -111,8 +111,8 @@ class AddFunds extends React.Component {
 }
 
 const AddCategory = () => {
-  const [category, setCategory] = useState(null);
-  const [totalBudget, setTotalBudget] = useState(0);
+  // const [category, setCategory] = useState(null);
+  // const [totalBudget, setTotalBudget] = useState(0);
 
   // if (this.state.currentCategory != null && this.state.amount) {
   //   FirebaseService
@@ -127,19 +127,14 @@ const AddCategory = () => {
   // else {
   //   Alert.alert("Please fill out all fields :)");
   // }
-  const addCategory = () => {
-    if (category && totalBudget) {
-      console.log("TEST: " + category);
-      FirebaseService.addCategoryType(category, totalBudget)
-        .then(response => {
-          console.log("Added Funds to Category: " + response);
-        })
-        .catch(e => {
-          console.log("Error adding funds to category: " + e);
-        });
-    } else {
-      Alert.alert("Please fill out all fields :)");
-    }
+  const addCategory = (category, totalBudget) => {
+    FirebaseService.addCategoryType(category, totalBudget)
+      .then(response => {
+        console.log("Added Funds to Category: " + response);
+      })
+      .catch(e => {
+        console.log("Error adding funds to category: " + e);
+      });
   };
 
   return (
@@ -149,7 +144,7 @@ const AddCategory = () => {
           <Form>
             <Title>Set category name</Title>
             <Formik
-              onSubmit={() => addCategory()}
+              onSubmit={values => addCategory(values.categories, values.budget)}
               initialValues={{ categories: "", budget: 0 }}
               validationSchema={AddCategorySchema}
             >
@@ -158,8 +153,8 @@ const AddCategory = () => {
                   <Input
                     type="text"
                     placeholder="Category name"
-                    value={category}
-                    handleBlur={handleBlur}
+                    value={values.categories}
+                    handleBlur={handleBlur("categories")}
                     onChangeText={handleChange("categories")}
                   />
                   <HelperText type="error" visible={errors.categories}>

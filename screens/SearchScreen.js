@@ -27,9 +27,16 @@ const SearchScreen = ({ navigation }) => {
       const c = await FirebaseService.getAllCategories();
       const categories = JSON.parse(JSON.stringify(c));
 
+      console.log(categories);
       let parsedCategories = categories;
 
-      if (typeof categories[0].timestamps === "object") {
+      if (
+        categories &&
+        typeof categories === "array" &&
+        categories.length > 0 &&
+        categories[0].timestamps &&
+        typeof categories[0].timestamps === "object"
+      ) {
         parsedCategories = categories.map(c => {
           const timestamps = [];
           Object.keys(c.timestamps).map(key => {
@@ -40,9 +47,9 @@ const SearchScreen = ({ navigation }) => {
           return { ...c, timestamps };
         });
         setCategories(parsedCategories);
-        setLoading(false);
         setSearchResults(parsedCategories);
       }
+      setLoading(false);
     };
     asyncFunc();
   }, []);
