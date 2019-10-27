@@ -4,7 +4,7 @@ import * as Permissions from "expo-permissions";
 import React from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import { FAB, Modal } from "react-native-paper";
+import { ActivityIndicator, FAB, Modal } from "react-native-paper";
 import styled from "styled-components";
 import config from "../config";
 
@@ -34,12 +34,14 @@ export default class VoiceRecognition extends React.Component {
     super(props);
     this.recording = null;
     this.state = {
+      isAnalyzing: false,
       isFetching: false,
       isRecording: false,
       command: "",
       visible: false,
       scale: new Animated.Value(1),
-      opacity: new Animated.Value(1)
+      opacity: new Animated.Value(1),
+      error: null
     };
   }
 
@@ -64,6 +66,29 @@ export default class VoiceRecognition extends React.Component {
     }
   };
 
+  analyzeStatement = async statement => {
+    try {
+      const response = await fetch(config.NLP_FUNCTION_URL, {
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        body: JSON.stringify({ text: statement })
+      });
+
+      const data = response;
+      console.log(data);
+
+      switch (data.action) {
+        case 1:
+        // user wants to add funds
+        case 2:
+        // user wants to set funds for a category
+        default:
+      }
+    } catch (e) {
+      this.setState({ error: e });
+    }
+  };
+
   /**
    * Gets the transcription from google cloud function using NLP
    */
@@ -84,7 +109,8 @@ export default class VoiceRecognition extends React.Component {
         body: formData
       });
       const data = await response.json();
-      console.log(data);
+      console.log(data.transcript);
+      this.analyzeStatement(data.transcript);
       this.setState({ command: data.transcript });
     } catch (error) {
       console.log("There was an error reading file", error);
@@ -172,7 +198,8 @@ export default class VoiceRecognition extends React.Component {
   };
 
   render() {
-    const { isRecording, command, isFetching } = this.state;
+    const { isRecording, command, isFetching, error } = this.state;
+
     return (
       <React.Fragment>
         <Modal visible={this.state.visible} dismissable={true} />
@@ -203,6 +230,7 @@ export default class VoiceRecognition extends React.Component {
               />
             )}
           </AnimatedContainer>
+          {isFetching && <ActivityIndicator style={{ marginRight: 8 }} />}
           <FAB
             icon={isRecording ? "stop" : "microphone"}
             onPress={this.toggleRecording}
