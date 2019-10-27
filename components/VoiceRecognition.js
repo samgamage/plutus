@@ -1,17 +1,11 @@
-import { FontAwesome } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import * as Permissions from "expo-permissions";
 import React from "react";
-import {
-  ActivityIndicator,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
-import config from "./config";
+import { Animated, Easing, StyleSheet, Text } from "react-native";
+import { FAB, Modal } from "react-native-paper";
+import styled from "styled-components";
+import config from "../config";
 
 const recordingOptions = {
   android: {
@@ -41,7 +35,10 @@ export default class VoiceRecognition extends React.Component {
     this.state = {
       isFetching: false,
       isRecording: false,
-      command: ""
+      command: "",
+      visible: false,
+      scale: new Animated.Value(1),
+      opacity: new Animated.Value(1)
     };
   }
 
@@ -51,6 +48,10 @@ export default class VoiceRecognition extends React.Component {
       // command changed
     }
   }
+
+  showModal = () => this.setState({ visible: true });
+
+  hideModal = () => this.setState({ visible: false });
 
   deleteRecordingFile = async () => {
     console.log("Deleting file");
@@ -72,7 +73,7 @@ export default class VoiceRecognition extends React.Component {
       console.log(`FILE INFO: ${JSON.stringify(info)}`);
       const uri = info.uri;
       const formData = new FormData();
-      formData.VoiceRecognitionend("file", {
+      formData.append("file", {
         uri,
         type: "audio/x-wav",
         name: "speech2text"
@@ -131,6 +132,26 @@ export default class VoiceRecognition extends React.Component {
     }
   };
 
+  toggleRecording = () => {
+    if (this.state.isRecording) {
+      this.stopRecording();
+      this.hideModal();
+      this.handleOnPressOut();
+      Animated.timing(this.state.scale, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.in()
+      }).start();
+      Animated.spring(this.state.opacity, {
+        toValue: 1,
+        easing: Easing.in()
+      }).start();
+    } else {
+      this.startRecording();
+      this.showModal();
+    }
+  };
+
   resetRecording = () => {
     this.deleteRecordingFile();
     this.recording = null;
@@ -145,37 +166,47 @@ export default class VoiceRecognition extends React.Component {
     this.getTranscription();
   };
 
-  handlcommandChange = command => {
+  handleCommandChange = command => {
     this.setState({ command });
   };
 
   render() {
     const { isRecording, command, isFetching } = this.state;
     return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.container}>
-          {isRecording && (
-            <FontAwesome name="microphone" size={32} color="#48C9B0" />
-          )}
-          {!isRecording && (
-            <FontAwesome name="microphone" size={32} color="#48C9B0" />
-          )}
-          <TouchableOpacity
-            style={styles.button}
-            onPressIn={this.handleOnPressIn}
-            onPressOut={this.handleOnPressOut}
+      <React.Fragment>
+        <Modal visible={this.state.visible} dismissable={true} />
+        <VoiceRecognitionGroup style={styles.fab}>
+          <AnimatedContainer
+            style={{
+              transform: [{ scale: this.state.scale }],
+              opacity: this.state.opacity
+            }}
           >
-            {isFetching && <ActivityIndicator color="#ffffff" />}
-            {!isFetching && <Text>Hold for Voice Command</Text>}
-          </TouchableOpacity>
-        </View>
-        <View style={styles.container}>
-          <Text>{command}</Text>
-        </View>
-      </SafeAreaView>
+            {isRecording && (
+              <Text style={{ color: "white", marginRight: 8 }}>
+                What can I help you with today?
+              </Text>
+            )}
+          </AnimatedContainer>
+          <FAB
+            icon={isRecording ? "stop" : "microphone"}
+            onPress={this.toggleRecording}
+            small
+          />
+        </VoiceRecognitionGroup>
+      </React.Fragment>
     );
   }
 }
+
+const VoiceRecognitionGroup = styled.View`
+  display: flex;
+  flex-direction: row;
+`;
+
+const Container = styled.View``;
+
+const AnimatedContainer = Animated.createAnimatedComponent(Container);
 
 const styles = StyleSheet.create({
   container: {
@@ -190,5 +221,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 5,
     marginTop: 20
+  },
+  fab: {
+    position: "absolute",
+    margin: 16,
+    right: 0,
+    bottom: 86,
+    flex: 1,
+    alignItems: "center"
   }
 });

@@ -135,17 +135,32 @@ export const signOut = async () => {
 };
 
 export const addCategoryType = async (categoryType, totalBudget, currentAmount = null) => {
+    let currentList = await this.getAllCategories();
+    console.log("The List: " + currentList)
+
+    
+    let ref = firebase.database().ref(`${user.uid}/categories`);
+    await ref.orderByKey().once("value", (snapshot) => {
+        let numChildren = snapshot.numChildren();
+        for(let i = 0; i < numChildren; i++){
+            categories[i] = snapshot.child(i);
+        }
+        console.log("CATEGORIES: " + JSON.stringify(Object.values(categories)));
+    });
+    
     let newCategory = {
         "name": categoryType,
         "currentAmount": currentAmount,
         "totalBudget": totalBudget,
         "timestamp": []
     }
+
     let name = categoryType;
     firebase.database()
         // .ref(`${user.uid}/${categoryType}`)
         .ref(`ZVD4mxndrXWqLOrDqPmCn99jqoK2/categories`)
-        .update({ [categoryType]: newCategory })
+        // .push({ [categoryType]: newCategory })
+        .push([newCategory])
         .then((response) => {
             console.log("Created new Category: " + response);
         })
@@ -170,23 +185,17 @@ export const addCategoryItem = async (categoryType, currentAmount) => {
 
 export const getAllCategories = async () => {
     let categories = {};
-    let ref = `${user.uid}/categories`;
-    let query = ref.orderByChild().equalTo(1);
-    userQuery.once("value", function (snapshot) {
-        snapshot.forEach(function (child) {
-            console.log(child.key, child.val());
-        });
+    let ref = firebase.database().ref(`${user.uid}/categories`);
+    await ref.orderByKey().once("value", (snapshot) => {
+        let numChildren = snapshot.numChildren();
+        for(let i = 0; i < numChildren; i++){
+            categories[i] = snapshot.child(i);
+        }
+        console.log("CATEGORIES: " + JSON.stringify(Object.values(categories)));
+        // console.log("SNAPSHOT: " + snapshot.child("");
+        // categories = 
     });
 
-    await firebase.database()
-        .ref(`${user.uid}/categories`)
-        .then((response) => {
-            console.log(`Retrieved categories: ${categoryType}`);
-            categories = response;
-        })
-        .catch((err) => {
-            console.log(`Failed to add item to ${categoryType}: ${err}`);
-        });
     return categories;
 }
 

@@ -16,7 +16,7 @@ class AddFunds extends React.Component {
       visible: false,
       currentCategory: null
     }
-    FirebaseService.getCurrentDate();
+    FirebaseService.getAllCategories();
     this.getCategories();
   }
   state = {

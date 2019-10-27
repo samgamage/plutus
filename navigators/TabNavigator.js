@@ -9,6 +9,7 @@ import CategoryScreen from "../screens/CategoryScreen";
 import HomeScreen from "../screens/HomeScreen";
 import LoginScreen from "../screens/LoginScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import SignUpScreen from "../screens/SignUpScreen";
 import Typography from "../typeography";
 
 const HomeStack = createStackNavigator({
@@ -19,6 +20,13 @@ const HomeStack = createStackNavigator({
 const LoginStack = createStackNavigator(
   {
     Login: LoginScreen
+  },
+  { tabBarVisible: false }
+);
+
+const SignUpStack = createStackNavigator(
+  {
+    SignUp: SignUpScreen
   },
   { tabBarVisible: false }
 );
@@ -149,6 +157,9 @@ const SwitchNav = createSwitchNavigator(
   {
     Login: {
       screen: LoginStack
+    },
+    SignUp: {
+      screen: SignUpStack
     },
     Root: { screen: RootStack },
     AuthLoading: { screen: AuthLoading }

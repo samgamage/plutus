@@ -4,7 +4,7 @@ import { SafeAreaView, Text } from "react-native";
 import { Button } from "react-native-paper";
 import styled from "styled-components";
 
-class LoginScreen extends React.Component {
+class SignUpScreen extends React.Component {
   static navigationOptions = {
     header: null
   };
@@ -15,8 +15,8 @@ class LoginScreen extends React.Component {
     isSubbmitting: false
   };
 
-  onLogin = () => {
-    // FirebaseService.signInWithEmail(this.state.email, this.state.password).then(
+  onSignUp = () => {
+    // FirebaseService.createUserWithEmail(this.state.email, this.state.password).then(
     //   () => {
     this.props.navigation.navigate("Root");
     //   }
@@ -44,17 +44,17 @@ class LoginScreen extends React.Component {
             />
             <Button
               style={{ marginTop: 16 }}
-              onPress={this.onLogin}
+              onPress={this.onSignUp}
               mode="contained"
             >
-              Login
+              Sign Up
             </Button>
-            <Text style={{ marginTop: 16 }}>Don't have an account?</Text>
+            <Text style={{ marginTop: 16 }}>Already have an account?</Text>
             <Button
               style={{ marginTop: 8 }}
-              onPress={() => this.props.navigation.navigate("SignUp")}
+              onPress={() => this.props.navigation.navigate("Login")}
             >
-              Sign Up
+              Log in
             </Button>
           </SafeAreaView>
         </RootContainer>
@@ -63,7 +63,7 @@ class LoginScreen extends React.Component {
   }
 }
 
-export default LoginScreen;
+export default SignUpScreen;
 
 const Input = styled.TextInput`
   border-radius: 5px;
