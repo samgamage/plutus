@@ -21,24 +21,8 @@ import { withFirebase } from "../shared/FirebaseContext";
 import * as FirebaseService from "../shared/FirebaseService";
 
 class HomeScreen extends React.Component {
-  // static navigationOptions = ({ navigation, screenProps }) => {
-  //   return {
-  //     headerTitle: () => <Text>Plutus</Text>,
-  //     headerLeft: () => (
-  //       <TouchableOpacity
-  //         onPress={async () => {
-  //           await FirebaseService.signOut();
-  //           navigation.navigate("AuthLoading");
-  //         }}
-  //       >
-  //         <Feather name="log-out" size={24} />
-  //       </TouchableOpacity>
-  //     )
-  //   };
-  // };
-
   state = {
-    categories,
+    categories: [],
     selectedStartDate: null,
     visible: false,
     totalBalance: 0,
@@ -54,6 +38,8 @@ class HomeScreen extends React.Component {
     if (isNewUser === "unseen" || !isNewUser) {
       this.showModal();
     }
+    const categories = await FirebaseService.getAllCategories();
+    this.setState({ categories });
   }
 
   componentDidUpdate() {}
@@ -100,6 +86,7 @@ class HomeScreen extends React.Component {
   render() {
     const { selectedStartDate } = this.state;
     const startDate = selectedStartDate ? selectedStartDate.toString() : "";
+    console.log(this.state.categories);
 
     return (
       <React.Fragment>
@@ -112,6 +99,7 @@ class HomeScreen extends React.Component {
                     selectedDayColor="#00a86b"
                     selectedDayTextColor="white"
                     onDateChange={this.onDateChange}
+                    selectedStartDate={new Date()}
                   />
                   <SpaceBetween>
                     <H1 style={{ marginBottom: 16 }}>Categories</H1>
@@ -206,6 +194,16 @@ WrappedComponent.navigationOptions = ({ navigation }) => {
       >
         <Feather name="log-out" size={24} />
       </TouchableOpacity>
+    ),
+    headerRight: () => (
+      <TouchableOpacity
+        onPress={async () => {
+          navigation.navigate("Add");
+        }}
+        style={{ marginRight: 16 }}
+      >
+        <Feather name="plus-circle" size={24} />
+      </TouchableOpacity>
     )
   };
 };
@@ -250,18 +248,3 @@ const SpaceBetween = styled.View`
   flex-direction: row;
   justify-content: space-between;
 `;
-
-const categories = [
-  {
-    name: "Food",
-    id: "123asdac",
-    currentAmount: 1200,
-    totalAmount: 2000
-  },
-  {
-    name: "Rent",
-    id: "123addac",
-    currentAmount: 5000,
-    totalAmount: 5000
-  }
-];
