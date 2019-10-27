@@ -171,34 +171,39 @@ export const addCategoryItem = async (categoryType, currentAmount) => {
 };
 
 export const getAllCategories = async () => {
-    let categories = {};
-    let catList = [];
-    let ref = firebase.database().ref(`${user.uid}/categories`);
-        await ref.orderByKey().once("value", (snapshot) => {
-        let numChildren = snapshot.numChildren();
-        for(let i = 0; i < numChildren; i++){
-            categories[i] = snapshot.child(i);
-        }
-        console.log("CATEGORIES: " + JSON.stringify(Object.values(categories),null,4));
-        return Object.values(categories);
-    });
-}
+  let categories = {};
+  let catList = [];
+  let ref = firebase.database().ref(`${user.uid}/categories`);
+  let categoriesArray = [];
+  await ref.orderByKey().once("value", snapshot => {
+    let numChildren = snapshot.numChildren();
+    for (let i = 0; i < numChildren; i++) {
+      categories[i] = snapshot.child(i);
+    }
+    // console.log(
+    //   "CATEGORIES: " + JSON.stringify(Object.values(categories), null, 4)
+    // );
+    // return Object.values(categories);
+    categoriesArray = Object.values(categories);
+    console.log(categoriesArray);
+  });
+  return categoriesArray;
+};
 
-export const getSingleCategoryByID = async (index) => {
-    let categories = {};
-    let ref = firebase.database().ref(`${user.uid}/categories`);
-        await ref.orderByKey().once("value", (snapshot) => {
-        let numChildren = snapshot.numChildren();
-        for(let i = 0; i < numChildren; i++){
-            categories[i] = snapshot.child(i);
-        }
-        console.log("CATEGORIES: " + JSON.stringify(Object.values(categories),null,4));
-        return categories;
-    });
-}
-
-
-
+export const getSingleCategoryByID = async index => {
+  let categories = {};
+  let ref = firebase.database().ref(`${user.uid}/categories`);
+  await ref.orderByKey().once("value", snapshot => {
+    let numChildren = snapshot.numChildren();
+    for (let i = 0; i < numChildren; i++) {
+      categories[i] = snapshot.child(i);
+    }
+    console.log(
+      "CATEGORIES: " + JSON.stringify(Object.values(categories), null, 4)
+    );
+    return categories;
+  });
+};
 
 export const getCurrentDate = () => {
   let date = new Date();

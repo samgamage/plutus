@@ -1,38 +1,100 @@
-import React from "react";
-import { Animated, SafeAreaView, Text } from "react-native";
+import * as JsSearch from "js-search";
+import { stemmer } from "porter-stemmer";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Animated, SafeAreaView, Text } from "react-native";
 import { Searchbar } from "react-native-paper";
 import styled from "styled-components";
 import uuid from "uuid";
 import { withFirebase } from "../shared/FirebaseContext";
+import * as FirebaseService from "../shared/FirebaseService";
 
-class SearchScreen extends React.Component {
-  state = {
-    query: ""
+const SearchScreen = () => {
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState("");
+  const [categories, setCategories] = useState("");
+  const Search = new JsSearch.Search("id");
+  Search.tokenizer = new JsSearch.StemmingTokenizer(
+    stemmer,
+    new JsSearch.SimpleTokenizer()
+  );
+  Search.sanitizer = new JsSearch.LowerCaseSanitizer();
+  Search.indexStrategy = new JsSearch.AllSubstringsIndexStrategy();
+
+  useEffect(() => {
+    const asyncFunc = async () => {
+      const c = await FirebaseService.getAllCategories();
+      const categories = JSON.parse(JSON.stringify(c));
+
+      let parsedCategories = categories;
+
+      if (typeof categories[0].timestamps === "object") {
+        parsedCategories = categories.map(c => {
+          const timestamps = [];
+          Object.keys(c.timestamps).map(key => {
+            const [amount] = Object.values(c.timestamps[key]);
+            const [date] = Object.keys(c.timestamps[key]);
+            timestamps.push({ date, amount });
+          });
+          return { ...c, timestamps };
+        });
+        setCategories(parsedCategories);
+        setLoading(false);
+      }
+    };
+    asyncFunc();
+  }, []);
+
+  const initializeSearch = () => {
+    Search.addIndex("name");
+    Search.addIndex("CurrentAmount");
+    Search.addDocuments(categories);
   };
 
-  componentDidMount() {}
+  // const search = (q = query) => {
+  //   initializeSearch();
+  //   if (q.length === 0) {
+  //     setSearchResults(categories);
+  //   }
+  // };
 
-  render() {
+  if (loading) {
     return (
       <RootView>
         <Container>
-          <Searchbar
-            placeholder="Search"
-            onChangeText={query => {
-              this.setState({ query });
+          <SafeAreaView
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignContent: "center"
             }}
-            value={this.state.query}
-          />
-          <SafeAreaView>
-            <InnerContainer>
-              <Text>Search results</Text>
-            </InnerContainer>
+          >
+            <ActivityIndicator />
           </SafeAreaView>
         </Container>
       </RootView>
     );
   }
-}
+
+  return (
+    <RootView>
+      <Container>
+        <Searchbar
+          placeholder="Search"
+          onChangeText={query => {
+            setQuery(query);
+          }}
+          value={query}
+        />
+        <SafeAreaView>
+          <InnerContainer>
+            <Text>Search results</Text>
+          </InnerContainer>
+        </SafeAreaView>
+      </Container>
+    </RootView>
+  );
+};
 
 const WrappedComponent = withFirebase(SearchScreen);
 

@@ -1,17 +1,19 @@
 import { Feather } from "@expo/vector-icons";
 import accounting from "accounting";
+import moment from "moment";
 import { H1, H3 } from "native-base";
 import React from "react";
-import {
-  AsyncStorage,
-  FlatList,
-  SafeAreaView,
-  ScrollView,
-  Text
-} from "react-native";
+import { AsyncStorage, SafeAreaView, ScrollView, Text } from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { Button, Modal, Portal, ProgressBar, Title } from "react-native-paper";
+import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
+import {
+  ActivityIndicator,
+  Button,
+  Modal,
+  Portal,
+  ProgressBar,
+  Title
+} from "react-native-paper";
 import styled from "styled-components";
 import Container from "../components/Container";
 import MoneyInput from "../components/MoneyInput";
@@ -20,11 +22,15 @@ import * as UserActions from "../redux/actions/UserActions";
 import { withFirebase } from "../shared/FirebaseContext";
 import * as FirebaseService from "../shared/FirebaseService";
 
+const dateFormat = "YYYY-M-D";
+
 class HomeScreen extends React.Component {
   state = {
+    loading: true,
     categories: [],
-    selectedStartDate: null,
+    selectedStartDate: new Date(),
     visible: false,
+    currentTransactions: null,
     totalBalance: 0,
     user: this.props.firebase.auth().currentUser
   };
@@ -38,11 +44,58 @@ class HomeScreen extends React.Component {
     if (isNewUser === "unseen" || !isNewUser) {
       this.showModal();
     }
-    const categories = await FirebaseService.getAllCategories();
-    this.setState({ categories });
+    const c = await FirebaseService.getAllCategories();
+    const categories = JSON.parse(JSON.stringify(c));
+
+    let parsedCategories = categories;
+
+    if (typeof categories[0].timestamps === "object") {
+      parsedCategories = categories.map(c => {
+        const timestamps = [];
+        if (!c) {
+          return;
+        }
+        Object.keys(c.timestamps).map(key => {
+          const [amount] = Object.values(c.timestamps[key]);
+          const [date] = Object.keys(c.timestamps[key]);
+          timestamps.push({ date, amount });
+        });
+        return { ...c, timestamps };
+      });
+    }
+
+    const categoriesWithCurrentDateTransactions = parsedCategories.map(c => ({
+      ...c,
+      timestamps: c.timestamps.filter(
+        t => t.date === moment().format(dateFormat)
+      )
+    }));
+
+    this.setState({
+      categories: parsedCategories,
+      currentTransactions: categoriesWithCurrentDateTransactions,
+      loading: false
+    });
   }
 
-  componentDidUpdate() {}
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.selectedStartDate !== this.state.selectedStartDate) {
+      console.log(this.state.selectedStartDate);
+      const categoriesWithCurrentDateTransactions = this.state.categories.map(
+        c => ({
+          ...c,
+          timestamps: c.timestamps.filter(
+            t =>
+              t.date === moment(this.state.selectedStartDate).format(dateFormat)
+          )
+        })
+      );
+
+      this.setState({
+        currentTransactions: categoriesWithCurrentDateTransactions
+      });
+    }
+  }
 
   onPressAddCategory = () => {
     this.props.navigation.navigate("Add");
@@ -84,9 +137,28 @@ class HomeScreen extends React.Component {
   };
 
   render() {
-    const { selectedStartDate } = this.state;
+    const { selectedStartDate, loading } = this.state;
+    console.log(selectedStartDate);
+
+    if (loading) {
+      return (
+        <RootView>
+          <Container>
+            <SafeAreaView
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignContent: "center"
+              }}
+            >
+              <ActivityIndicator />
+            </SafeAreaView>
+          </Container>
+        </RootView>
+      );
+    }
+
     const startDate = selectedStartDate ? selectedStartDate.toString() : "";
-    console.log(this.state.categories);
 
     return (
       <React.Fragment>
@@ -95,48 +167,63 @@ class HomeScreen extends React.Component {
             <Container>
               <SafeAreaView>
                 <RootContainer>
+                  <H1>Your balance: $0</H1>
+                  <Title>Your budget: $0</Title>
+                  <ProgressBar
+                    progress={0}
+                    style={{ marginTop: 8 }}
+                    color="#00a86b"
+                  />
                   <CalendarPicker
                     selectedDayColor="#00a86b"
                     selectedDayTextColor="white"
                     onDateChange={this.onDateChange}
-                    selectedStartDate={new Date()}
+                    maxDate={new Date()}
                   />
                   <SpaceBetween>
-                    <H1 style={{ marginBottom: 16 }}>Categories</H1>
+                    <H1>Your Transactions</H1>
                     <TouchableOpacity
                       onPress={this.onPressAddCategory}
                       style={{
                         margin: "auto",
-                        display: "flex",
-                        alignItems: "center"
+                        flex: 1,
+                        alignItems: "center",
+                        justifyContent: "center"
                       }}
                     >
                       <Feather name="plus-circle" size={24} />
                     </TouchableOpacity>
                   </SpaceBetween>
+                  <Title style={{ marginBottom: 8 }}>
+                    For{" "}
+                    {moment(this.state.selectedStartDate).format(dateFormat)}
+                  </Title>
                   <ScrollView>
                     <FlatList
                       style={{ flex: 1, marginBottom: 64 }}
-                      data={this.state.categories}
+                      data={this.state.currentTransactions}
                       renderItem={({ item }) => (
                         <TouchableOpacity
                           onPress={() => this.onPressCategory(item.id)}
                         >
                           <Item>
                             <Title>{item.name}</Title>
-                            <Text>
-                              {accounting.formatMoney(item.currentAmount)} /{" "}
-                              {accounting.formatMoney(item.totalAmount)}
-                            </Text>
-                            <ProgressBar
-                              progress={item.currentAmount / item.totalAmount}
-                              color="#00a86b"
-                              style={{ marginTop: 8 }}
+                            <FlatList
+                              data={item.timestamps}
+                              renderItem={({ item }) => (
+                                <SpaceBetween>
+                                  <Text>{item.date}</Text>
+                                  <Text>
+                                    {accounting.formatMoney(item.amount)}
+                                  </Text>
+                                </SpaceBetween>
+                              )}
+                              keyExtractor={(item, i) => item.date + i}
                             />
                           </Item>
                         </TouchableOpacity>
                       )}
-                      keyExtractor={item => item.id}
+                      keyExtractor={item => item.name}
                     />
                   </ScrollView>
                 </RootContainer>
