@@ -206,7 +206,6 @@ export default class VoiceRecognition extends React.Component {
           <FAB
             icon={isRecording ? "stop" : "microphone"}
             onPress={this.toggleRecording}
-            small
           />
         </VoiceRecognitionGroup>
       </React.Fragment>

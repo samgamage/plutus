@@ -1,11 +1,20 @@
-import { Content, Form, H1, Tab, Tabs } from "native-base";
+import { Feather } from "@expo/vector-icons";
+import { Formik } from "formik";
+import { Content, Form, Tab, Tabs } from "native-base";
 import React, { useState } from "react";
-import { FlatList, Text, View, Alert } from "react-native";
-import { Button, Menu, Title } from "react-native-paper";
+import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
+import { Button, HelperText, Menu, Title } from "react-native-paper";
 import styled from "styled-components";
+import * as Yup from "yup";
 import MoneyInput from "../components/MoneyInput";
 import * as FirebaseService from "../shared/FirebaseService";
 import Typography from "../typeography";
+
+const AddCategorySchema = Yup.object().shape({
+  categories: Yup.string()
+    .min(3, "Category must be at least 3 characters")
+    .required("This field is required")
+});
 
 class AddFunds extends React.Component {
   constructor(props) {
@@ -15,7 +24,7 @@ class AddFunds extends React.Component {
       amount: 0,
       visible: false,
       currentCategory: null
-    }
+    };
     FirebaseService.getAllCategories();
     this.getCategories();
   }
@@ -28,9 +37,9 @@ class AddFunds extends React.Component {
   getCategories = async () => {
     let categories = await FirebaseService.getAllCategories();
     console.log("The Kool Catz: " + JSON.stringify(categories));
-  }
+  };
 
-  addFunds = () => { };
+  addFunds = () => {};
 
   openMenu = () => this.setState({ visible: true });
 
@@ -46,14 +55,14 @@ class AddFunds extends React.Component {
       <RootContainer>
         <Container>
           <Content>
-            <H1>Funds</H1>
+            <Title>Set amount to be added</Title>
             <MoneyInput
               value={this.state.amount}
               onChangeText={text => {
                 this.setState({ amount: text });
               }}
             />
-            <H1 style={{ marginTop: 16 }}>Category</H1>
+            <Title>Choose category to add to</Title>
             <Menu
               visible={this.state.visible}
               onDismiss={this.closeMenu}
@@ -105,7 +114,6 @@ const AddCategory = () => {
   const [category, setCategory] = useState(null);
   const [totalBudget, setTotalBudget] = useState(0);
 
-
   // if (this.state.currentCategory != null && this.state.amount) {
   //   FirebaseService
   //     .addCategory(this.state.currentCategory, this.state.amount, "120")
@@ -121,19 +129,17 @@ const AddCategory = () => {
   // }
   const addCategory = () => {
     if (category && totalBudget) {
-      console.log("TEST: " + category)
-      FirebaseService
-        .addCategoryType(category, totalBudget)
-        .then((response) => {
-          console.log("Added Funds to Category: " + response)
+      console.log("TEST: " + category);
+      FirebaseService.addCategoryType(category, totalBudget)
+        .then(response => {
+          console.log("Added Funds to Category: " + response);
         })
-        .catch((e) => {
+        .catch(e => {
           console.log("Error adding funds to category: " + e);
         });
+    } else {
+      Alert.alert("Please fill out all fields :)");
     }
-    else {
-        Alert.alert("Please fill out all fields :)");
-      }
   };
 
   return (
@@ -141,27 +147,40 @@ const AddCategory = () => {
       <Container>
         <Content>
           <Form>
-            <H1>Category</H1>
-            <Input
-              type="text"
-              value={category}
-              onChangeText={text => setCategory(text)}
-            />
-            <Title>Set budget</Title>
-            <MoneyInput
-              value={totalBudget}
-              onChangeText={text => {
-                setTotalBudget(text);
-              }}
-            />
-            <Button
-              onPress={addCategory}
-              style={{ marginTop: 16 }}
-              color="#00a86b"
-              mode="contained"
+            <Title>Set category name</Title>
+            <Formik
+              onSubmit={() => addCategory()}
+              initialValues={{ categories: "", budget: 0 }}
+              validationSchema={AddCategorySchema}
             >
-              Submit
-            </Button>
+              {({ values, handleChange, handleSubmit, handleBlur, errors }) => (
+                <React.Fragment>
+                  <Input
+                    type="text"
+                    placeholder="Category name"
+                    value={category}
+                    handleBlur={handleBlur}
+                    onChangeText={handleChange("categories")}
+                  />
+                  <HelperText type="error" visible={errors.categories}>
+                    {errors.categories}
+                  </HelperText>
+                  <Title>Set budget</Title>
+                  <MoneyInput
+                    value={values.budget}
+                    onChangeText={handleChange("budget")}
+                  />
+                  <Button
+                    onPress={handleSubmit}
+                    style={{ marginTop: 16 }}
+                    color="#00a86b"
+                    mode="contained"
+                  >
+                    Submit
+                  </Button>
+                </React.Fragment>
+              )}
+            </Formik>
           </Form>
         </Content>
       </Container>
@@ -172,7 +191,15 @@ const AddCategory = () => {
 export default class AddScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <Text>Plutus</Text>
+      headerTitle: () => <Text>Plutus</Text>,
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: 8 }}
+        >
+          <Feather name="arrow-left" size={24} />
+        </TouchableOpacity>
+      )
     };
   };
 
@@ -218,7 +245,7 @@ const Container = styled.View`
 `;
 
 const RootContainer = styled.View`
-  padding-top: 32px;
+  padding-top: 16px;
   padding-bottom: 16px;
   background-color: #f0f3f5;
 `;

@@ -40,7 +40,7 @@ class LoginScreen extends React.Component {
             <Formik
               initialValues={{ email: "", password: "" }}
               onSubmit={values => this.onLogin(values.email, values.password)}
-              // validationSchema={LoginSchema}
+              validationSchema={LoginSchema}
             >
               {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
                 <React.Fragment>

@@ -9,12 +9,14 @@ import CategoryScreen from "../screens/CategoryScreen";
 import HomeScreen from "../screens/HomeScreen";
 import LoginScreen from "../screens/LoginScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import SearchScreen from "../screens/SearchScreen";
 import SignUpScreen from "../screens/SignUpScreen";
 import Typography from "../typeography";
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,
-  Category: CategoryScreen
+  Category: CategoryScreen,
+  Add: AddScreen
 });
 
 const LoginStack = createStackNavigator(
@@ -54,16 +56,16 @@ HomeStack.navigationOptions = ({ navigation }) => {
   };
 };
 
-const AddStack = createStackNavigator({
-  Add: AddScreen
+const SearchStack = createStackNavigator({
+  Search: SearchScreen
 });
 
-AddStack.navigationOptions = {
-  tabBarLabel: "Add",
+SearchStack.navigationOptions = {
+  tabBarLabel: "Search",
   headerTitle: () => <Text>Plutus</Text>,
   tabBarIcon: ({ focused }) => (
     <Feather
-      name="plus-circle"
+      name="search"
       size={26}
       color={focused ? Typography.activeColor : Typography.inactiveColor}
     />
@@ -88,7 +90,7 @@ ProfileStack.navigationOptions = {
 const TabNavigator = createBottomTabNavigator(
   {
     HomeStack,
-    AddStack,
+    SearchStack,
     ProfileStack
   },
   {
