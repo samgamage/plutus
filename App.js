@@ -2,7 +2,7 @@ import React from "react";
 import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
 import AppNavigator from "./navigators/AppNavigator";
 import FirebaseContext from "./shared/FirebaseContext";
-import { firebaseInstance } from "./shared/FirebaseService";
+import Firebase from "./shared/FirebaseService";
 import Typeography from "./typeography";
 
 const theme = {
@@ -17,7 +17,7 @@ const theme = {
 const App = () => {
   return (
     <PaperProvider theme={theme}>
-      <FirebaseContext.Provider value={firebaseInstance}>
+      <FirebaseContext.Provider value={new Firebase()}>
         <AppNavigator />
       </FirebaseContext.Provider>
     </PaperProvider>

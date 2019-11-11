@@ -7,7 +7,6 @@ import { FlatList, SafeAreaView, TouchableOpacity } from "react-native";
 import { ActivityIndicator, Searchbar, Title } from "react-native-paper";
 import styled from "styled-components";
 import { withFirebase } from "../shared/FirebaseContext";
-import * as FirebaseService from "../shared/FirebaseService";
 
 const SearchScreen = ({ navigation }) => {
   const [query, setQuery] = useState("");
@@ -23,35 +22,30 @@ const SearchScreen = ({ navigation }) => {
   Search.indexStrategy = new JsSearch.AllSubstringsIndexStrategy();
 
   useEffect(() => {
-    const asyncFunc = async () => {
-      const c = await FirebaseService.getAllCategories();
-      const categories = JSON.parse(JSON.stringify(c));
-
-      console.log(categories);
-      let parsedCategories = categories;
-
-      if (
-        categories &&
-        typeof categories === "array" &&
-        categories.length > 0 &&
-        categories[0].timestamps &&
-        typeof categories[0].timestamps === "object"
-      ) {
-        parsedCategories = categories.map(c => {
-          const timestamps = [];
-          Object.keys(c.timestamps).map(key => {
-            const [amount] = Object.values(c.timestamps[key]);
-            const [date] = Object.keys(c.timestamps[key]);
-            timestamps.push({ date, amount });
-          });
-          return { ...c, timestamps };
-        });
-        setCategories(parsedCategories);
-        setSearchResults(parsedCategories);
-      }
-      setLoading(false);
-    };
-    asyncFunc();
+    // const asyncFunc = async () => {
+    //   if (
+    //     categories &&
+    //     typeof categories === "array" &&
+    //     categories.length > 0 &&
+    //     categories[0].timestamps &&
+    //     typeof categories[0].timestamps === "object"
+    //   ) {
+    //     parsedCategories = categories.map(c => {
+    //       const timestamps = [];
+    //       Object.keys(c.timestamps).map(key => {
+    //         const [amount] = Object.values(c.timestamps[key]);
+    //         const [date] = Object.keys(c.timestamps[key]);
+    //         timestamps.push({ date, amount });
+    //       });
+    //       return { ...c, timestamps };
+    //     });
+    //     setCategories(parsedCategories);
+    //     setSearchResults(parsedCategories);
+    //   }
+    //   setLoading(false);
+    // };
+    // asyncFunc();
+    setLoading(false);
   }, []);
 
   const initializeSearch = () => {

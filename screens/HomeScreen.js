@@ -1,8 +1,7 @@
 import { Feather } from "@expo/vector-icons";
-import accounting from "accounting";
 import moment from "moment";
 import { H1, H3, Text } from "native-base";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AsyncStorage, SafeAreaView, ScrollView } from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
@@ -15,29 +14,52 @@ import {
   Title
 } from "react-native-paper";
 import styled from "styled-components";
+import BudgetStatusBar from "../components/BudgetStatusBar";
 import Container from "../components/Container";
 import MoneyInput from "../components/MoneyInput";
 import VoiceRecognition from "../components/VoiceRecognition";
-import * as UserActions from "../redux/actions/UserActions";
 import { withFirebase } from "../shared/FirebaseContext";
-import * as FirebaseService from "../shared/FirebaseService";
 
 const dateFormat = "YYYY-M-D";
+
+const StatusBar = ({ firebase, uid }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const asyncFunc = async () => {
+      await firebase.user(uid).on("value", snapshot => {
+        const user = snapshot.val();
+        setUser(Object.values(user)[0]);
+      });
+      setLoading(false);
+    };
+    asyncFunc();
+  }, []);
+
+  if (loading) {
+    return <ActivityIndicator />;
+  }
+
+  return (
+    <React.Fragment>
+      <H1>Your balance: {user && user.balance ? user.balance : "$0"}</H1>
+      <Title>Your budget: $0</Title>
+      <ProgressBar progress={0} style={{ marginTop: 8 }} color="#00a86b" />
+    </React.Fragment>
+  );
+};
 
 class HomeScreen extends React.Component {
   state = {
     loading: true,
-    categories: [],
+    categories: null,
     selectedStartDate: new Date(),
     visible: false,
     currentTransactions: null,
     totalBalance: 0,
     totalBudget: 0,
-    user: this.props.firebase.auth().currentUser
-  };
-
-  testLogin = () => {
-    UserActions.dispatch();
+    uid: ""
   };
 
   async componentDidMount() {
@@ -45,68 +67,84 @@ class HomeScreen extends React.Component {
     if (isNewUser === "unseen" || !isNewUser) {
       this.showModal();
     }
-    const c = await FirebaseService.getAllCategories();
-    const categories = JSON.parse(JSON.stringify(c)) || [];
 
-    console.log(categories);
-    let parsedCategories = categories;
-
-    if (
-      categories &&
-      typeof categories === "array" &&
-      categories.length > 0 &&
-      typeof categories[0].timestamps === "object"
-    ) {
-      parsedCategories = categories.map(c => {
-        const timestamps = [];
-        if (!c || !c.timestamps) {
-          return;
+    const uid = await this.props.firebase.getCurrentUser();
+    await this.props.firebase.categories(uid).on("value", snapshot => {
+      const categoriesObj = snapshot.val();
+      let categoriesArray = [];
+      if (categoriesObj) {
+        categoriesArray = this.props.firebase.transformObjectToArray(
+          categoriesObj
+        );
+      }
+      // calculate budget from categories
+      let totalBudget = 0;
+      categoriesArray.forEach(category => {
+        if (category && category.budget) {
+          totalBudget += category.budget;
         }
-        Object.keys(c.timestamps).map(key => {
-          const [amount] = Object.values(c.timestamps[key]);
-          const [date] = Object.keys(c.timestamps[key]);
-          timestamps.push({ date, amount });
-        });
-        return { ...c, timestamps };
       });
-    }
-
-    const categoriesWithCurrentDateTransactions = parsedCategories.map(c => ({
-      ...c,
-      timestamps: c.timestamps.filter(
-        t => t.date === moment().format(dateFormat)
-      )
-    }));
-
-    let totalBudget = 0;
-    parsedCategories.forEach(c =>
-      c.timestamps.forEach(t => (totalBudget += Number(t.amount)))
-    );
-
-    this.setState({
-      categories: parsedCategories,
-      currentTransactions: categoriesWithCurrentDateTransactions,
-      loading: false,
-      totalBudget
+      this.setState({
+        uid,
+        totalBudget,
+        loading: false,
+        categories: categoriesArray
+      });
     });
+    // const categories = JSON.parse(JSON.stringify(c)) || [];
+
+    // console.log(categories);
+    // let parsedCategories = categories;
+
+    // if (
+    //   categories &&
+    //   typeof categories === "array" &&
+    //   categories.length > 0 &&
+    //   typeof categories[0].timestamps === "object"
+    // ) {
+    //   parsedCategories = categories.map(c => {
+    //     const timestamps = [];
+    //     if (!c || !c.timestamps) {
+    //       return;
+    //     }
+    //     Object.keys(c.timestamps).map(key => {
+    //       const [amount] = Object.values(c.timestamps[key]);
+    //       const [date] = Object.keys(c.timestamps[key]);
+    //       timestamps.push({ date, amount });
+    //     });
+    //     return { ...c, timestamps };
+    //   });
+    // }
+
+    // const categoriesWithCurrentDateTransactions = parsedCategories.map(c => ({
+    //   ...c,
+    //   timestamps: c.timestamps.filter(
+    //     t => t.date === moment().format(dateFormat)
+    //   )
+    // }));
+
+    // parsedCategories.forEach(c =>
+    //   c.timestamps.forEach(t => (totalBudget += Number(t.amount)))
+    // );
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.selectedStartDate !== this.state.selectedStartDate) {
-      console.log(this.state.selectedStartDate);
-      const categoriesWithCurrentDateTransactions = this.state.categories.map(
-        c => ({
-          ...c,
-          timestamps: c.timestamps.filter(
-            t =>
-              t.date === moment(this.state.selectedStartDate).format(dateFormat)
-          )
-        })
-      );
-
-      this.setState({
-        currentTransactions: categoriesWithCurrentDateTransactions
-      });
+      // if (this.state.categories.length > 0) {
+      //   const categoriesWithCurrentDateTransactions = this.state.categories.map(
+      //     c => ({
+      //       ...c,
+      //       timestamps: c.timestamps.filter(
+      //         t =>
+      //           t.date ===
+      //           moment(this.state.selectedStartDate).format(dateFormat)
+      //       )
+      //     })
+      //   );
+      //   this.setState({
+      //     currentTransactions: categoriesWithCurrentDateTransactions
+      //   });
+      // }
     }
   }
 
@@ -143,15 +181,18 @@ class HomeScreen extends React.Component {
 
   hideModal = () => this.setState({ visible: false });
 
-  onModalFormSubmit = () => {
-    // update users total balance here
-    this.setUserStatusToSeen();
-    this.hideModal();
+  onModalFormSubmit = async () => {
+    const uid = await this.props.firebase.getCurrentUser();
+    this.props.firebase
+      .user(uid)
+      .update({ balance: this.state.totalBalance }, () => {
+        this.setUserStatusToSeen();
+        this.hideModal();
+      });
   };
 
   render() {
     const { selectedStartDate, loading, totalBudget } = this.state;
-    console.log(selectedStartDate);
 
     if (loading) {
       return (
@@ -180,14 +221,9 @@ class HomeScreen extends React.Component {
             <Container>
               <SafeAreaView>
                 <RootContainer>
-                  <H1>Your balance: $0</H1>
-                  <Title>
-                    Your budget: {accounting.formatMoney(totalBudget)}
-                  </Title>
-                  <ProgressBar
-                    progress={0}
-                    style={{ marginTop: 8 }}
-                    color="#00a86b"
+                  <BudgetStatusBar
+                    totalBudget={totalBudget}
+                    uid={this.state.uid}
                   />
                   <CalendarPicker
                     selectedDayColor="#00a86b"
@@ -214,16 +250,17 @@ class HomeScreen extends React.Component {
                     {moment(this.state.selectedStartDate).format(dateFormat)}
                   </Title>
                   <ScrollView>
-                    <FlatList
-                      style={{ flex: 1, marginBottom: 64 }}
-                      data={this.state.currentTransactions}
-                      renderItem={({ item, index }) => (
-                        <TouchableOpacity
-                          onPress={() => this.onPressCategory(item)}
-                        >
-                          <Item>
-                            <Title>{item.name}</Title>
-                            <FlatList
+                    {this.state.categories ? (
+                      <FlatList
+                        style={{ flex: 1, marginBottom: 64 }}
+                        data={this.state.categories}
+                        renderItem={({ item }) => (
+                          <TouchableOpacity
+                            onPress={() => this.onPressCategory(item)}
+                          >
+                            <Item>
+                              <Title>{item.name}</Title>
+                              {/* <FlatList
                               data={item.timestamps}
                               renderItem={({ item }) => (
                                 <SpaceBetween>
@@ -234,14 +271,18 @@ class HomeScreen extends React.Component {
                                 </SpaceBetween>
                               )}
                               keyExtractor={(item, i) => item.date + i}
-                            />
-                          </Item>
-                        </TouchableOpacity>
-                      )}
-                      keyExtractor={item => item.name}
-                    />
+                            /> */}
+                            </Item>
+                          </TouchableOpacity>
+                        )}
+                        keyExtractor={item => item.id}
+                      />
+                    ) : (
+                      <Text>No categories found</Text>
+                    )}
                   </ScrollView>
                 </RootContainer>
+                {/* User prompt modal */}
                 <Portal>
                   <Modal visible={this.state.visible} dismissable={true}>
                     <ModalContainer>
@@ -285,18 +326,6 @@ const WrappedComponent = withFirebase(HomeScreen);
 WrappedComponent.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <Text>Plutus</Text>,
-    headerLeft: () => (
-      <TouchableOpacity
-        onPress={async () => {
-          await AsyncStorage.setItem("userToken", "");
-          await FirebaseService.signOut();
-          navigation.navigate("AuthLoading");
-        }}
-        style={{ marginLeft: 16 }}
-      >
-        <Feather name="log-out" size={24} />
-      </TouchableOpacity>
-    ),
     headerRight: () => (
       <TouchableOpacity
         onPress={async () => {

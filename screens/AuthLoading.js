@@ -11,9 +11,7 @@ class AuthLoadingScreen extends React.Component {
       this.props.navigation.navigate("Root");
       return;
     }
-    const user = this.props.firebase.auth().currentUser;
-    console.log("Firebase auth user:");
-    console.log(user);
+    const user = this.props.firebase.auth.currentUser;
 
     // This will switch to the App screen or Auth screen and this loading
     // screen will be unmounted and thrown away.

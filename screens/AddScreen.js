@@ -1,20 +1,15 @@
 import { Feather } from "@expo/vector-icons";
 import { Formik } from "formik";
-import { Content, Form, Tab, Tabs } from "native-base";
+import { Content, Tab, Tabs } from "native-base";
 import React from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { Button, HelperText, Menu, Title } from "react-native-paper";
 import styled from "styled-components";
+import uuid from "uuid";
 import * as Yup from "yup";
 import MoneyInput from "../components/MoneyInput";
-import * as FirebaseService from "../shared/FirebaseService";
+import { withFirebase } from "../shared/FirebaseContext";
 import Typography from "../typeography";
-
-const AddCategorySchema = Yup.object().shape({
-  categories: Yup.string()
-    .min(3, "Category must be at least 3 characters")
-    .required("This field is required")
-});
 
 class AddFunds extends React.Component {
   constructor(props) {
@@ -25,19 +20,7 @@ class AddFunds extends React.Component {
       visible: false,
       currentCategory: null
     };
-    FirebaseService.getAllCategories();
-    this.getCategories();
   }
-  state = {
-    amount: 0,
-    visible: false,
-    currentCategory: null
-  };
-
-  getCategories = async () => {
-    let categories = await FirebaseService.getAllCategories();
-    console.log("The Kool Catz: " + JSON.stringify(categories));
-  };
 
   addFunds = () => {};
 
@@ -50,7 +33,6 @@ class AddFunds extends React.Component {
   };
 
   render() {
-    console.log(this.state.currentCategory);
     return (
       <RootContainer>
         <Container>
@@ -110,94 +92,73 @@ class AddFunds extends React.Component {
   }
 }
 
-const AddCategory = () => {
-  // const [category, setCategory] = useState(null);
-  // const [totalBudget, setTotalBudget] = useState(0);
+const AddCategorySchema = Yup.object().shape({
+  name: Yup.string()
+    .min(3, "Category must be at least 3 characters")
+    .required("This field is required")
+});
 
-  // if (this.state.currentCategory != null && this.state.amount) {
-  //   FirebaseService
-  //     .addCategory(this.state.currentCategory, this.state.amount, "120")
-  //     .then((response) => {
-  //       console.log("Added Funds to Category: " + response)
-  //     })
-  //     .catch((e) => {
-  //       console.log("Error adding funds to category: " + e);
-  //     });
-  // }
-  // else {
-  //   Alert.alert("Please fill out all fields :)");
-  // }
-  const addCategory = (category, totalBudget) => {
-    FirebaseService.addCategoryType(category, totalBudget)
-      .then(response => {
-        console.log("Added Funds to Category: " + response);
-      })
-      .catch(e => {
-        console.log("Error adding funds to category: " + e);
-      });
+const AddCategory = ({ firebase, navigation }) => {
+  const addCategory = (name, budget) => {
+    const id = uuid.v4();
+    const category = {
+      id,
+      name,
+      budget,
+      transactions: []
+    };
+    firebase.category(firebase.auth.currentUser.uid, id).set(category, () => {
+      navigation.navigate("Home");
+    });
   };
 
   return (
     <RootContainer>
       <Container>
         <Content>
-          <Form>
-            <Title>Set category name</Title>
-            <Formik
-              onSubmit={values => addCategory(values.categories, values.budget)}
-              initialValues={{ categories: "", budget: 0 }}
-              validationSchema={AddCategorySchema}
-            >
-              {({ values, handleChange, handleSubmit, handleBlur, errors }) => (
-                <React.Fragment>
-                  <Input
-                    type="text"
-                    placeholder="Category name"
-                    value={values.categories}
-                    handleBlur={handleBlur("categories")}
-                    onChangeText={handleChange("categories")}
-                  />
-                  <HelperText type="error" visible={errors.categories}>
-                    {errors.categories}
-                  </HelperText>
-                  <Title>Set budget</Title>
-                  <MoneyInput
-                    value={values.budget}
-                    onChangeText={handleChange("budget")}
-                  />
-                  <Button
-                    onPress={handleSubmit}
-                    style={{ marginTop: 16 }}
-                    color="#00a86b"
-                    mode="contained"
-                  >
-                    Submit
-                  </Button>
-                </React.Fragment>
-              )}
-            </Formik>
-          </Form>
+          <Title>Set category name</Title>
+          <Formik
+            onSubmit={(values, actions) => {
+              addCategory(values.name, values.budget);
+              actions.resetForm();
+            }}
+            initialValues={{ name: "", budget: 0 }}
+            validationSchema={AddCategorySchema}
+          >
+            {({ values, handleChange, handleSubmit, errors }) => (
+              <React.Fragment>
+                <Input
+                  type="text"
+                  placeholder="Category name"
+                  value={values.name}
+                  onChangeText={handleChange("name")}
+                />
+                <HelperText type="error" visible={errors.name}>
+                  {errors.name}
+                </HelperText>
+                <Title>Set budget</Title>
+                <MoneyInput
+                  value={values.budget}
+                  onChangeText={handleChange("budget")}
+                />
+                <Button
+                  onPress={handleSubmit}
+                  style={{ marginTop: 16 }}
+                  color="#00a86b"
+                  mode="contained"
+                >
+                  Submit
+                </Button>
+              </React.Fragment>
+            )}
+          </Formik>
         </Content>
       </Container>
     </RootContainer>
   );
 };
 
-export default class AddScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerTitle: () => <Text>Plutus</Text>,
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ marginLeft: 8 }}
-        >
-          <Feather name="arrow-left" size={24} />
-        </TouchableOpacity>
-      )
-    };
-  };
-
+class AddScreen extends React.Component {
   state = {
     index: 0,
     routes: [
@@ -214,15 +175,37 @@ export default class AddScreen extends React.Component {
         tabBarUnderlineStyle={{ backgroundColor: Typography.activeColor }}
       >
         <Tab heading="Add Category">
-          <AddCategory />
+          <AddCategory
+            firebase={this.props.firebase}
+            navigation={this.props.navigation}
+          />
         </Tab>
         <Tab heading="Add Funds">
-          <AddFunds />
+          <AddFunds
+            firebase={this.props.firebase}
+            navigation={this.props.navigation}
+          />
         </Tab>
       </Tabs>
     );
   }
 }
+
+const WrappedComponent = withFirebase(AddScreen);
+
+WrappedComponent.navigationOptions = ({ navigation }) => ({
+  headerTitle: () => <Text>Plutus</Text>,
+  headerLeft: () => (
+    <TouchableOpacity
+      onPress={() => navigation.goBack()}
+      style={{ marginLeft: 8 }}
+    >
+      <Feather name="arrow-left" size={24} />
+    </TouchableOpacity>
+  )
+});
+
+export default WrappedComponent;
 
 const Input = styled.TextInput`
   border-radius: 5px;

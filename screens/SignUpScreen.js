@@ -1,11 +1,11 @@
 import { Formik } from "formik";
 import { H1 } from "native-base";
 import React from "react";
-import { SafeAreaView, Text } from "react-native";
+import { AsyncStorage, SafeAreaView, Text } from "react-native";
 import { Button, HelperText } from "react-native-paper";
 import styled from "styled-components";
 import * as Yup from "yup";
-import * as FirebaseService from "../shared/FirebaseService";
+import { withFirebase } from "../shared/FirebaseContext";
 
 const SignUpSchema = Yup.object().shape({
   email: Yup.string()
@@ -17,14 +17,12 @@ const SignUpSchema = Yup.object().shape({
 });
 
 class SignUpScreen extends React.Component {
-  static navigationOptions = {
-    header: null
-  };
-
-  onSignUp = (email, password) => {
-    FirebaseService.createUserWithEmail(email, password).then(() => {
+  onSignUp = async (email, password) => {
+    const user = await this.props.firebase.signUpWithEmail(email, password);
+    if (user) {
+      await AsyncStorage.setItem("newUser", "unseen");
       this.props.navigation.navigate("AuthLoading");
-    });
+    }
   };
 
   render() {
@@ -85,7 +83,13 @@ class SignUpScreen extends React.Component {
   }
 }
 
-export default SignUpScreen;
+const WrappedComponent = withFirebase(SignUpScreen);
+
+WrappedComponent.navigationOptions = {
+  header: null
+};
+
+export default WrappedComponent;
 
 const Input = styled.TextInput`
   border-radius: 5px;

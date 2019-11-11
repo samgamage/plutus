@@ -1,10 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-const Logo = props => (
+const Logo = ({ source, text }) => (
   <Container>
-    <Image source={props.image} resizeMode="contain" />
-    <Text>{props.text}</Text>
+    <Image source={source} resizeMode="contain" />
+    <Text>{text}</Text>
   </Container>
 );
 

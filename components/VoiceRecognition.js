@@ -1,6 +1,7 @@
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import * as Permissions from "expo-permissions";
+import { Toast } from "native-base";
 import React from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
@@ -41,15 +42,9 @@ export default class VoiceRecognition extends React.Component {
       visible: false,
       scale: new Animated.Value(1),
       opacity: new Animated.Value(1),
-      error: null
+      error: null,
+      isVisible: false
     };
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    const { command } = this.state;
-    if (prevState.command === null && command !== null) {
-      // command changed
-    }
   }
 
   showModal = () => this.setState({ visible: true });
@@ -68,24 +63,36 @@ export default class VoiceRecognition extends React.Component {
 
   analyzeStatement = async statement => {
     try {
+      console.log(statement);
       const response = await fetch(config.NLP_FUNCTION_URL, {
         headers: { "Content-Type": "application/json" },
         method: "POST",
-        body: JSON.stringify({ text: statement })
+        body: JSON.stringify({ text: statement || "" })
       });
 
-      const data = response;
+      const data = await response.json();
       console.log(data);
 
-      switch (data.action) {
-        case 1:
-        // user wants to add funds
-        case 2:
-        // user wants to set funds for a category
-        default:
+      if (data) {
+        switch (data.action) {
+          case 1:
+            // user wants to add funds
+            this.setState({
+              isVisible: true,
+              message: `Add funds to ${data.industry}`
+            });
+          case 2:
+            // user wants to set funds for a category
+            this.setState({
+              isVisible: true,
+              message: `Set funds for ${data.industry} to ${data.amount}`
+            });
+          default:
+        }
       }
     } catch (e) {
       this.setState({ error: e });
+      Toast.show(e.message);
     }
   };
 
@@ -143,7 +150,7 @@ export default class VoiceRecognition extends React.Component {
       await recording.prepareToRecordAsync(recordingOptions);
       await recording.startAsync();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       this.stopRecording();
     }
 

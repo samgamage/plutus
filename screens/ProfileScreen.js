@@ -10,58 +10,75 @@ class ProfileScreen extends React.Component {
     this.state = {
       isEditing: false,
       isSubmitting: false,
-      displayName: this.props.firebase.auth().currentUser.displayName || "",
-      email: this.props.firebase.auth().currentUser.email
+      isLoading: true,
+      user: null,
+      uid: ""
     };
-    console.log(this.props.firebase.auth().currentUser.displayName);
-    console.log(this.props.firebase.auth().currentUser.email);
+  }
+
+  async componentDidMount() {
+    const uid = await this.props.firebase.getCurrentUser();
+    await this.props.firebase.user(uid).on("value", snapshot => {
+      const user = snapshot.val();
+      this.setState({ uid, user, isLoading: false });
+    });
   }
 
   render() {
+    if (this.state.isLoading) {
+      return <Text>Loading</Text>;
+    }
+
+    console.log(this.state.user);
     return (
       <Container>
         <RootContainer>
           {this.state.isEditing ? (
             <FieldItem>
               <TextInput
-                placeholder={this.state.displayName || "Display name"}
-                value={this.state.displayName}
-                onChangeText={text => this.setState({ displayName: text })}
-                style={{ width: "100%" }}
-              />
-            </FieldItem>
-          ) : (
-            <FieldItem>
-              <Title>Display name</Title>
-              <Text>{this.state.displayName}</Text>
-            </FieldItem>
-          )}
-          {this.state.isEditing ? (
-            <FieldItem>
-              <TextInput
-                placeholder={this.state.email}
-                value={this.state.email}
-                onChangeText={text => this.setState({ email: text })}
+                placeholder={this.state.user.email || "Email"}
+                value={this.state.user.email}
+                onChangeText={email =>
+                  this.setState({ user: { ...this.state.user, email } })
+                }
                 style={{ width: "100%" }}
               />
             </FieldItem>
           ) : (
             <FieldItem>
               <Title>Email</Title>
-              <Text>{this.state.email}</Text>
+              <Text>{this.state.user.email}</Text>
+            </FieldItem>
+          )}
+          {this.state.isEditing ? (
+            <FieldItem>
+              <TextInput
+                placeholder={this.state.user.username}
+                value={this.state.user.username}
+                onChangeText={username =>
+                  this.setState({ user: { ...this.state.user, username } })
+                }
+                style={{ width: "100%" }}
+              />
+            </FieldItem>
+          ) : (
+            <FieldItem>
+              <Title>Username</Title>
+              <Text>{this.state.user.username}</Text>
             </FieldItem>
           )}
           {this.state.isEditing && (
             <Button
               onPress={async () => {
-                await this.props.firebase.auth().currentUser.updateProfile({
-                  displayName: this.state.displayName
-                });
+                await this.props.firebase.auth.currentUser.updateEmail(
+                  this.state.user.email
+                );
                 await this.props.firebase
-                  .auth()
-                  .currentUser.updateEmail(this.state.email);
-                console.log("Update profile success");
-                this.setState({ isEditing: false });
+                  .user(this.state.uid)
+                  .update(this.state.user, () => {
+                    console.log("Update profile success");
+                    this.setState({ isEditing: false });
+                  });
               }}
               color="#00a86b"
               mode="contained"
@@ -84,6 +101,17 @@ class ProfileScreen extends React.Component {
               Edit Profile
             </Button>
           )}
+          <Button
+            onPress={async () => {
+              await this.props.firebase.signOut();
+              this.props.navigation.navigate("AuthLoading");
+            }}
+            color="#00a86b"
+            mode="contained"
+            style={{ marginTop: 16, color: "white" }}
+          >
+            Sign out
+          </Button>
         </RootContainer>
       </Container>
     );
