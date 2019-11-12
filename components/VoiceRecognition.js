@@ -42,7 +42,7 @@ export default class VoiceRecognition extends React.Component {
       scale: new Animated.Value(1),
       opacity: new Animated.Value(1),
       error: null,
-      isVisible: false
+      response: null
     };
   }
 
@@ -72,19 +72,29 @@ export default class VoiceRecognition extends React.Component {
       const data = await response.json();
       console.log(data);
 
+      if (!data.industry || data.industry === "None") {
+        throw new Error("Unable to map command to category.");
+      }
+
       if (data) {
         switch (data.action) {
           case 1:
             // user wants to add funds
             this.setState({
-              isVisible: true,
-              message: `Add funds to ${data.industry}`
+              response: {
+                ok: true,
+                message: `Added funds to ${data.industry}`
+              }
             });
           case 2:
             // user wants to set funds for a category
             this.setState({
-              isVisible: true,
-              message: `Set funds for ${data.industry} to ${data.amount}`
+              response: {
+                ok: true,
+                message: `Set funds for ${
+                  data.industry
+                } at ${accounting.formatMoney(data.amount)}`
+              }
             });
           default:
         }
