@@ -87,6 +87,18 @@ class ProfileScreen extends React.Component {
               Save
             </Button>
           )}
+          {this.state.isEditing && (
+            <Button
+              onPress={async () => {
+                this.setState({ isEditing: false });
+              }}
+              color="#00a86b"
+              mode="contained"
+              style={{ marginTop: 16, color: "white" }}
+            >
+              Cancel
+            </Button>
+          )}
           {!this.state.isEditing && (
             <Button
               onPress={() =>

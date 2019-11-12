@@ -1,11 +1,10 @@
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import * as Permissions from "expo-permissions";
-import { Toast } from "native-base";
 import React from "react";
-import { Animated, Easing, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, StyleSheet, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import { ActivityIndicator, FAB, Modal } from "react-native-paper";
+import { ActivityIndicator, Card, FAB, Modal, Text } from "react-native-paper";
 import styled from "styled-components";
 import config from "../config";
 
@@ -92,7 +91,6 @@ export default class VoiceRecognition extends React.Component {
       }
     } catch (e) {
       this.setState({ error: e });
-      Toast.show(e.message);
     }
   };
 
@@ -207,6 +205,37 @@ export default class VoiceRecognition extends React.Component {
   render() {
     const { isRecording, command, isFetching, error } = this.state;
 
+    if (error) {
+      return (
+        <React.Fragment>
+          <Modal
+            visible={this.state.error}
+            onDismiss={() => this.setState({ error: null })}
+            dismissable={true}
+            contentContainerStyle={styles.flexContainer}
+          >
+            <View style={{ marginLeft: 16, marginRight: 16 }}>
+              <Card>
+                <Card.Title title="Error" />
+                <Card.Content>
+                  <Text>
+                    Something unexpected occurred. Please try voice input again.
+                  </Text>
+                </Card.Content>
+              </Card>
+            </View>
+          </Modal>
+          <VoiceRecognitionGroup style={styles.fab}>
+            {isFetching && <ActivityIndicator style={{ marginRight: 8 }} />}
+            <FAB
+              icon={isRecording ? "stop" : "microphone"}
+              onPress={this.toggleRecording}
+            />
+          </VoiceRecognitionGroup>
+        </React.Fragment>
+      );
+    }
+
     return (
       <React.Fragment>
         <Modal visible={this.state.visible} dismissable={true} />
@@ -275,7 +304,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     margin: 16,
     right: 0,
-    bottom: 48,
+    bottom: 70,
     flex: 1,
     alignItems: "center"
   }

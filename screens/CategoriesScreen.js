@@ -1,14 +1,13 @@
-import accounting from "accounting";
 import * as JsSearch from "js-search";
 import { Text } from "native-base";
 import { stemmer } from "porter-stemmer";
 import React, { useEffect, useState } from "react";
 import { FlatList, SafeAreaView, TouchableOpacity } from "react-native";
-import { ActivityIndicator, Searchbar, Title } from "react-native-paper";
+import { ActivityIndicator, Card, Searchbar, Title } from "react-native-paper";
 import styled from "styled-components";
 import { withFirebase } from "../shared/FirebaseContext";
 
-const SearchScreen = ({ navigation }) => {
+const CategoriesScreen = ({ navigation, firebase }) => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchResults, setSearchResults] = useState([]);
@@ -22,29 +21,17 @@ const SearchScreen = ({ navigation }) => {
   Search.indexStrategy = new JsSearch.AllSubstringsIndexStrategy();
 
   useEffect(() => {
-    // const asyncFunc = async () => {
-    //   if (
-    //     categories &&
-    //     typeof categories === "array" &&
-    //     categories.length > 0 &&
-    //     categories[0].timestamps &&
-    //     typeof categories[0].timestamps === "object"
-    //   ) {
-    //     parsedCategories = categories.map(c => {
-    //       const timestamps = [];
-    //       Object.keys(c.timestamps).map(key => {
-    //         const [amount] = Object.values(c.timestamps[key]);
-    //         const [date] = Object.keys(c.timestamps[key]);
-    //         timestamps.push({ date, amount });
-    //       });
-    //       return { ...c, timestamps };
-    //     });
-    //     setCategories(parsedCategories);
-    //     setSearchResults(parsedCategories);
-    //   }
-    //   setLoading(false);
-    // };
-    // asyncFunc();
+    const asyncFunc = async () => {
+      const uid = await firebase.getCurrentUser();
+      await firebase.categories(uid).on("value", snapshot => {
+        const categoriesObj = snapshot.val();
+        if (categoriesObj) {
+          setCategories(firebase.transformObjectToArray(categoriesObj));
+          setSearchResults(firebase.transformObjectToArray(categoriesObj));
+        }
+      });
+    };
+    asyncFunc();
     setLoading(false);
   }, []);
 
@@ -87,13 +74,11 @@ const SearchScreen = ({ navigation }) => {
     );
   }
 
-  console.log(searchResults);
-
   return (
     <RootView>
       <Container>
         <Searchbar
-          placeholder="Search"
+          placeholder="Search categories..."
           onChangeText={query => {
             setQuery(query);
             search(query);
@@ -105,23 +90,15 @@ const SearchScreen = ({ navigation }) => {
             style={{ flex: 1, marginBottom: 64 }}
             data={searchResults}
             renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => onPressCategory(item)}>
-                <Item>
-                  <Title>{item.name}</Title>
-                  <FlatList
-                    data={item.timestamps}
-                    renderItem={({ item }) => (
-                      <SpaceBetween>
-                        <Text>{item.date}</Text>
-                        <Text>{accounting.formatMoney(item.amount)}</Text>
-                      </SpaceBetween>
-                    )}
-                    keyExtractor={(item, i) => item.date + i}
-                  />
-                </Item>
+              <TouchableOpacity onPress={() => onPressCategory(item.id)}>
+                <Card style={{ marginBottom: 16 }}>
+                  <Card.Content>
+                    <Title>{item.name}</Title>
+                  </Card.Content>
+                </Card>
               </TouchableOpacity>
             )}
-            keyExtractor={item => item.name}
+            keyExtractor={item => item.id}
           />
         </InnerContainer>
       </Container>
@@ -129,10 +106,10 @@ const SearchScreen = ({ navigation }) => {
   );
 };
 
-const WrappedComponent = withFirebase(SearchScreen);
+const WrappedComponent = withFirebase(CategoriesScreen);
 
 WrappedComponent.navigationOptions = {
-  headerTitle: () => <Text>Search</Text>
+  headerTitle: () => <Text>Categories</Text>
 };
 
 export default WrappedComponent;

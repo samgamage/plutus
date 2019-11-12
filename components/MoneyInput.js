@@ -18,7 +18,7 @@ const MoneyInput = ({ value, onChangeText, ...props }) => (
       padding: 8,
       backgroundColor: "white",
       marginTop: 8,
-      borderRadius: 8,
+      borderRadius: 5,
       borderWidth: 1,
       borderColor: "gray"
     }}

@@ -1,63 +1,132 @@
 import { Feather } from "@expo/vector-icons";
-import { H1 } from "native-base";
+import accounting from "accounting";
+import { H1, H2, H3, Text } from "native-base";
 import React from "react";
 import {
-  Animated,
   Dimensions,
   SafeAreaView,
   ScrollView,
-  Text,
   TouchableOpacity
 } from "react-native";
-import { BarChart, ContributionGraph } from "react-native-chart-kit";
+import { ContributionGraph, LineChart } from "react-native-chart-kit";
+import {
+  ActivityIndicator,
+  Button,
+  Modal,
+  Portal,
+  Title
+} from "react-native-paper";
 import styled from "styled-components";
+import Container from "../components/Container";
+import MoneyInput from "../components/MoneyInput";
+import { withFirebase } from "../shared/FirebaseContext";
 
 class CategoryScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ marginLeft: 8 }}
-        >
-          <Feather name="arrow-left" size={24} />
-        </TouchableOpacity>
-      ),
-      headerTitle: () => <Text>Plutus</Text>
-    };
-  };
-
   state = {
     category: null,
     labels: [],
     data: [],
     heatmap: [],
-    loading: true
+    loading: true,
+    visible: false,
+    noTransactions: false,
+    currentBudget: 0
   };
 
   async componentDidMount() {
-    const category = this.props.navigation.state.params.category;
-    const labels = category.timestamps.map(t => t.date);
-    const data = category.timestamps.map(t => t.amount);
-    const array = [];
-    category.timestamps.forEach(t => {
-      array.push({ key: t.date, value: t.amount });
-    });
-    const heatmap = array.reduce((acc, curr, i) => {
-      if (typeof acc[curr.key] == "undefined") {
-        acc[i] = { date: curr.key, count: 1 };
-      } else {
-        acc[i] = { date: curr.key, count: acc[i].count + 1 };
-      }
+    const cid = this.props.navigation.state.params.category;
+    const uid = await this.props.firebase.getCurrentUser();
 
-      return acc;
-    }, []);
-    this.setState({ labels, data, heatmap, category });
+    await this.props.firebase.category(uid, cid).on("value", snapshot => {
+      const category = snapshot.val();
+      // calculate budget from categories
+
+      if (!category || !category.transactions) {
+        this.setState({ loading: false, noTransactions: true });
+        return;
+      }
+      let labels = category.transactions.map(t => t.date);
+      let data = category.transactions.map(t => t.amount);
+      const array = [];
+      category.transactions.forEach(t => {
+        array.push({ key: t.date, value: t.amount });
+      });
+      const heatmap = array.reduce((acc, curr, i) => {
+        if (typeof acc[curr.key] == "undefined") {
+          acc[i] = { date: curr.key, count: 1 };
+        } else {
+          acc[i] = { date: curr.key, count: acc[i].count + 1 };
+        }
+
+        return acc;
+      }, []);
+      this.setState({
+        loading: false,
+        currentBudget: category.budget,
+        labels,
+        data,
+        heatmap,
+        category
+      });
+    });
   }
 
-  componentDidUpdate() {}
+  showModal = () => this.setState({ visible: true });
+
+  hideModal = () => this.setState({ visible: false });
+
+  onModalFormSubmit = async () => {
+    if (this.state.totalBalance != 0) {
+      const uid = await this.props.firebase.getCurrentUser();
+      const cid = this.props.navigation.state.params.category;
+      this.props.firebase
+        .category(uid, cid)
+        .update(
+          { budget: accounting.unformat(this.state.currentBudget) },
+          () => {
+            this.hideModal();
+          }
+        );
+    }
+  };
 
   render() {
+    if (this.state.loading) {
+      return (
+        <Root>
+          <Container>
+            <SafeAreaView
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignContent: "center"
+              }}
+            >
+              <ActivityIndicator />
+            </SafeAreaView>
+          </Container>
+        </Root>
+      );
+    }
+
+    if (this.state.noTransactions) {
+      return (
+        <Root>
+          <Container>
+            <SafeAreaView
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignContent: "center"
+              }}
+            >
+              <Title style={{ textAlign: "center" }}>No transaction data</Title>
+            </SafeAreaView>
+          </Container>
+        </Root>
+      );
+    }
+
     const data = {
       labels: this.state.labels,
       datasets: [
@@ -69,7 +138,6 @@ class CategoryScreen extends React.Component {
 
     const chartConfig = {
       backgroundGradientFrom: "#fff",
-      backgroundGradientFromOpacity: 0,
       backgroundGradientTo: "#fff",
       backgroundGradientToOpacity: 0.5,
       color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
@@ -77,46 +145,129 @@ class CategoryScreen extends React.Component {
       barPercentage: 0.5
     };
 
+    const lineChartOptions = {
+      low: 0,
+      showArea: true
+    };
+
     return (
-      <RootView>
-        <Container>
-          <ScrollView>
-            <SafeAreaView>
-              <H1 style={{ textAlign: "center", marginBottom: 8 }}>
-                {this.props.navigation.state.params.category.name}
-              </H1>
-              <BarChart
-                data={data}
-                width={Dimensions.get("window").width - 20}
-                height={220}
-                chartConfig={chartConfig}
-                style={{ marginBottom: 8 }}
-              />
-              <H1 style={{ textAlign: "center", marginBottom: 8 }}>
-                Your Financial Activity for{" "}
-                {this.props.navigation.state.params.category.name}
-              </H1>
-              <ContributionGraph
-                values={this.state.heatmap}
-                endDate={new Date()}
-                numDays={100}
-                width={Dimensions.get("window").width - 20}
-                height={220}
-                chartConfig={chartConfig}
-              />
-            </SafeAreaView>
-          </ScrollView>
-        </Container>
-      </RootView>
+      <Root>
+        <ScrollView>
+          <Container>
+            <H1 style={{ textAlign: "center", marginBottom: 8 }}>
+              {this.state.category.name}
+            </H1>
+            <Flex>
+              <H2 style={{ textAlign: "center", marginBottom: 8 }}>
+                Budget: {accounting.formatMoney(this.state.category.budget)}
+              </H2>
+              <TouchableOpacity
+                onPress={() => {
+                  this.setState({ visible: true });
+                }}
+                style={{}}
+              >
+                <Feather
+                  name="edit-2"
+                  size={24}
+                  style={{ marginLeft: 8, color: "gray" }}
+                />
+              </TouchableOpacity>
+            </Flex>
+            <LineChart
+              data={data}
+              width={Dimensions.get("window").width - 32} // from react-native
+              height={220}
+              yAxisLabel={"$"}
+              fromZero
+              chartConfig={{
+                backgroundGradientFrom: "#fff",
+                backgroundGradientTo: "#fff",
+                decimalPlaces: 2, // optional, defaults to 2dp
+                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                style: {
+                  borderRadius: 16
+                },
+                propsForDots: {
+                  r: "6",
+                  strokeWidth: "2",
+                  stroke: "#ddd"
+                }
+              }}
+              bezier
+              style={{
+                marginVertical: 8,
+                borderRadius: 8
+              }}
+            />
+            <H3 style={{ textAlign: "center", marginTop: 8 }}>
+              Your Financial Activity for {this.state.category.name}
+            </H3>
+            <ContributionGraph
+              values={this.state.heatmap}
+              endDate={new Date()}
+              numDays={84}
+              width={Dimensions.get("window").width - 36}
+              height={220}
+              chartConfig={chartConfig}
+              style={{
+                borderRadius: 8,
+                marginVertical: 8
+              }}
+            />
+          </Container>
+          <Portal>
+            <Modal
+              visible={this.state.visible}
+              onDismiss={() => this.setState({ visible: false })}
+              dismissable={true}
+            >
+              <ModalContainer>
+                <H3 style={{ marginBottom: 8 }}>
+                  Set budget for {this.state.category.name}
+                </H3>
+                <MoneyInput
+                  value={this.state.currentBudget}
+                  onChangeText={text => {
+                    this.setState({ currentBudget: text });
+                  }}
+                />
+                <Button
+                  style={{ marginTop: 16 }}
+                  onPress={this.onModalFormSubmit}
+                  mode="contained"
+                >
+                  Submit
+                </Button>
+              </ModalContainer>
+            </Modal>
+          </Portal>
+        </ScrollView>
+      </Root>
     );
   }
 }
 
-export default CategoryScreen;
+const WrappedComponent = withFirebase(CategoryScreen);
 
-const RootView = styled.View`
-  background: white;
+WrappedComponent.navigationOptions = ({ navigation }) => ({
+  headerLeft: () => (
+    <TouchableOpacity
+      onPress={() => navigation.goBack()}
+      style={{ marginLeft: 8 }}
+    >
+      <Feather name="arrow-left" size={24} />
+    </TouchableOpacity>
+  ),
+  headerTitle: () => <Text>Plutus</Text>
+});
+
+export default WrappedComponent;
+
+const Root = styled.View`
   flex: 1;
+  background: #f0f3f5;
 `;
 
 const Subtitle = styled.Text`
@@ -128,30 +279,33 @@ const Subtitle = styled.Text`
   text-transform: uppercase;
 `;
 
-const Container = styled.View`
-  flex: 1;
-  background-color: #f0f3f5;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+const RootContainer = styled.View`
+  margin-top: 16px;
+  margin-bottom: 16px;
+`;
+
+const Item = styled.View`
+  margin-bottom: 16px;
+  background-color: white;
   padding: 16px;
+  border-radius: 8px;
 `;
 
-const AnimatedContainer = Animated.createAnimatedComponent(Container);
-
-const Title = styled.Text`
-  font-size: 16px;
-  color: #b8bece;
-  font-weight: 500;
+const ModalContainer = styled.View`
+  margin: 32px 48px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: white;
 `;
 
-const Name = styled.Text`
-  font-size: 20px;
-  color: #00a86b;
-  font-weight: bold;
+const SpaceBetween = styled.View`
+  flex: 1;
+  flex-direction: row;
+  justify-content: space-between;
 `;
 
-const TitleBar = styled.View`
-  width: 100%;
-  margin-top: 50px;
-  padding-left: 80px;
+const Flex = styled.View`
+  flex: 1;
+  flex-direction: row;
+  justify-content: center;
 `;

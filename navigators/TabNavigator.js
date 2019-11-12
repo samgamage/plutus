@@ -5,17 +5,16 @@ import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import AddScreen from "../screens/AddScreen";
 import AuthLoading from "../screens/AuthLoading";
+import CategoriesScreen from "../screens/CategoriesScreen";
 import CategoryScreen from "../screens/CategoryScreen";
 import HomeScreen from "../screens/HomeScreen";
 import LoginScreen from "../screens/LoginScreen";
 import ProfileScreen from "../screens/ProfileScreen";
-import SearchScreen from "../screens/SearchScreen";
 import SignUpScreen from "../screens/SignUpScreen";
 import Typography from "../typeography";
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,
-  Category: CategoryScreen,
   Add: AddScreen
 });
 
@@ -56,16 +55,17 @@ HomeStack.navigationOptions = ({ navigation }) => {
   };
 };
 
-const SearchStack = createStackNavigator({
-  Search: SearchScreen
+const CategoriesStack = createStackNavigator({
+  Categories: CategoriesScreen,
+  Category: CategoryScreen
 });
 
-SearchStack.navigationOptions = {
-  tabBarLabel: "Search",
+CategoriesStack.navigationOptions = {
+  tabBarLabel: "Categories",
   headerTitle: () => <Text>Plutus</Text>,
   tabBarIcon: ({ focused }) => (
     <Feather
-      name="search"
+      name="archive"
       size={26}
       color={focused ? Typography.activeColor : Typography.inactiveColor}
     />
@@ -90,7 +90,7 @@ ProfileStack.navigationOptions = {
 const TabNavigator = createBottomTabNavigator(
   {
     HomeStack,
-    SearchStack,
+    SearchStack: CategoriesStack,
     ProfileStack
   },
   {
@@ -109,6 +109,7 @@ const TabNavigator = createBottomTabNavigator(
         position: "absolute",
         bottom: 0,
         left: 0,
+        height: 40,
         width: "100%",
         backgroundColor: "white",
         borderColor: "rgb(27, 42, 51)",

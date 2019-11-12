@@ -71,9 +71,9 @@ export default class Firebase {
 
   category = (uid, cid) => this.db.ref(`users/${uid}/categories/${cid}`);
 
-  transactions = uid => this.db.ref(`user/${uid}/transactions`);
+  transactions = uid => this.db.ref(`users/${uid}/transactions`);
 
-  transaction = (uid, tid) => this.db.ref(`user/${uid}/transactions/${tid}`);
+  transaction = (uid, tid) => this.db.ref(`users/${uid}/transactions/${tid}`);
 
   getCurrentUser = async () => {
     const token = await AsyncStorage.getItem("userToken");
