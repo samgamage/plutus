@@ -74,6 +74,9 @@ export default class Firebase {
   categoryTransactions = (uid, cid) =>
     this.db.ref(`users/${uid}/categories/${cid}/transactions`);
 
+  categoryTransaction = (uid, cid, tid) =>
+    this.db.ref(`users/${uid}/categories/${cid}/transactions/${tid}`);
+
   transactions = uid => this.db.ref(`users/${uid}/transactions`);
 
   transaction = (uid, tid) => this.db.ref(`users/${uid}/transactions/${tid}`);

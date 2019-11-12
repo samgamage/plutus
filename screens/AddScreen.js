@@ -20,7 +20,6 @@ class AddFunds extends React.Component {
 
     this.state = {
       uid: "",
-      amount: 0,
       visible: false,
       categories: [],
       loading: true
@@ -61,9 +60,9 @@ class AddFunds extends React.Component {
           <Content>
             <Title>Set amount to be added</Title>
             <MoneyInput
-              value={this.state.amount}
+              value={this.props.amount}
               onChangeText={text => {
-                this.setState({ amount: text });
+                this.props.setAmount(text);
               }}
             />
             <Title>Choose category to add to</Title>
@@ -102,7 +101,7 @@ class AddFunds extends React.Component {
               ></FlatList>
             </Menu>
             <Button
-              onPress={() => this.props.addFundsWithAmount(this.state.amount)}
+              onPress={this.props.addFundsWithAmount}
               style={{ marginTop: 16 }}
               color="#00a86b"
               mode="contained"
@@ -175,22 +174,40 @@ const AddCategory = ({
 class AddScreen extends React.Component {
   state = {
     index: 0,
+    loading: true,
     routes: [
       { key: "funds", title: "Add Transactions" },
       { key: "category", title: "Add Category" }
     ],
+    categories: [],
     currentCategory: null,
-    commandResponse: null
+    commandResponse: null,
+    amount: 0
   };
 
-  addFundsWithAmount = async amount => {
+  componentDidMount() {
+    const uid = this.props.firebase.auth.currentUser.uid;
+    this.props.firebase.categories(uid).on("value", async snapshot => {
+      const categoriesObj = snapshot.val();
+      let categoriesArray = [];
+      if (categoriesObj) {
+        categoriesArray = this.props.firebase.transformObjectToArray(
+          categoriesObj
+        );
+      }
+      this.setState({ loading: false, categories: categoriesArray });
+    });
+  }
+
+  addFundsWithAmount = async () => {
     const uid = await this.props.firebase.getCurrentUser();
     if (this.state.currentCategory) {
       const transaction = {
         id: uuid.v4(),
-        amount: accounting.unformat(amount),
+        amount: accounting.unformat(this.state.amount),
         category: this.state.currentCategory.id,
-        date: moment().format("YYYY-M-D")
+        date: moment().format("YYYY-M-D"),
+        timestamp: moment().format()
       };
       const newCategory = {
         ...this.state.currentCategory,
@@ -211,68 +228,77 @@ class AddScreen extends React.Component {
     }
   };
 
-  addFundsWithAmountAndCategory = (amount, categoryName) => {
-    if (this.state.currentCategory) {
-      const uid = this.props.firebase.auth.currentUser.uid;
+  addFundsWithAmountAndCategory = async (amount, categoryName) => {
+    const uid = this.props.firebase.auth.currentUser.uid;
 
-      // find category
-      this.props.firebase.categories(uid).on("value", async snapshot => {
-        const categoriesObj = snapshot.val();
-        let categoriesArray = [];
-        if (categoriesObj) {
-          categoriesArray = this.props.firebase.transformObjectToArray(
-            categoriesObj
-          );
-        }
-        const existingCategory = categoriesArray.find(
-          c => c.name === categoryName
-        );
-        if (!existingCategory) {
-          console.log("No existing category");
-          const category = await this.addCategory(categoryName, amount * 2);
-          const transaction = {
-            id: uuid.v4(),
-            amount: accounting.unformat(amount),
-            category: category.id,
-            date: moment().format("YYYY-M-D")
-          };
-          const transactionRef = this.props.firebase.transaction(uid, tid);
-          await transactionRef.set(transaction);
-          this.setState({
-            commandResponse: {
-              ok: true,
-              message: `Created category ${
-                category.name
-              } and added ${accounting.formatMoney(amount)} to it`
-            }
-          });
-        } else {
-          console.log("Category already exists");
-          console.log(existingCategory);
-          const tid = uuid.v4();
-          const newCategoryTransactionRef = this.props.firebase
-            .categoryTransactions(uid, existingCategory.id)
-            .push();
-          const transaction = {
-            id: newCategoryTransactionRef.key,
-            amount: accounting.unformat(amount),
-            category: existingCategory.id,
-            date: moment().format("YYYY-M-D")
-          };
-          newCategoryTransactionRef.set(transaction);
+    // find category
 
-          this.props.firebase.transaction(uid, tid).set(transaction, () => {
-            this.setState({
-              commandResponse: {
-                ok: true,
-                message: `Added ${accounting.formatMoney(amount)} to ${
-                  existingCategory.name
-                }`
-              }
-            });
-          });
-        }
-      });
+    const existingCategory = this.state.categories.find(
+      c => String(c.name).toLowerCase() === String(categoryName).toLowerCase()
+    );
+    if (!existingCategory) {
+      console.log("No existing category");
+      const cid = uuid.v4();
+      const category = {
+        id: cid,
+        name: categoryName,
+        budget: accounting.unformat(amount * 2),
+        transactions: []
+      };
+      const categoryRef = this.props.firebase.category(uid, cid);
+      await categoryRef.set(category);
+      const transaction = {
+        id: uuid.v4(),
+        amount: accounting.unformat(amount),
+        category: category.id,
+        date: moment().format("YYYY-M-D"),
+        timestamp: moment().format()
+      };
+      const transactionRef = this.props.firebase.transaction(
+        uid,
+        transaction.id
+      );
+      const categoryTransactionRef = this.props.firebase.categoryTransaction(
+        uid,
+        category.id,
+        transaction.id
+      );
+      await transactionRef.set(transaction);
+      await categoryTransactionRef.set(transaction);
+
+      return {
+        ok: true,
+        message: `Created category ${
+          category.name
+        } and added ${accounting.formatMoney(amount)} to it`
+      };
+    } else {
+      console.log("Category already exists");
+      const cid = existingCategory.id;
+      const tid = uuid.v4();
+
+      const transaction = {
+        id: tid,
+        amount: accounting.unformat(amount),
+        category: existingCategory.id,
+        date: moment().format("YYYY-M-D"),
+        timestamp: moment().format()
+      };
+      const transactionRef = this.props.firebase.transaction(uid, tid);
+      const categoryTransactionRef = this.props.firebase.categoryTransaction(
+        uid,
+        cid,
+        tid
+      );
+      await transactionRef.set(transaction);
+      await categoryTransactionRef.set(transaction);
+
+      return {
+        ok: true,
+        message: `Added ${accounting.formatMoney(amount)} to ${
+          existingCategory.name
+        }`
+      };
     }
   };
 
@@ -293,13 +319,19 @@ class AddScreen extends React.Component {
     return category;
   };
 
+  setAmount = amount => {
+    this.setState({ amount });
+  };
+
   setCurrentCategory = async category => {
     this.setState({ currentCategory: category });
-    this.addFundsWithAmountAndCategory(20, "Retail");
-    console.log(this.state.commandResponse);
   };
 
   render() {
+    if (this.state.loading) {
+      return null;
+    }
+
     return (
       <React.Fragment>
         <Tabs
@@ -327,6 +359,8 @@ class AddScreen extends React.Component {
           >
             <AddFunds
               firebase={this.props.firebase}
+              setAmount={this.setAmount}
+              amount={this.state.amount}
               navigation={this.props.navigation}
               addFundsWithAmount={this.addFundsWithAmount}
               setCurrentCategory={this.setCurrentCategory}
@@ -334,7 +368,9 @@ class AddScreen extends React.Component {
             />
           </Tab>
         </Tabs>
-        <VoiceRecognition />
+        <VoiceRecognition
+          addFundsWithAmountAndCategory={this.addFundsWithAmountAndCategory}
+        />
       </React.Fragment>
     );
   }

@@ -1,3 +1,4 @@
+import accounting from "accounting";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import * as Permissions from "expo-permissions";
@@ -70,37 +71,46 @@ export default class VoiceRecognition extends React.Component {
       });
 
       const data = await response.json();
-      console.log(data);
 
-      if (!data.industry || data.industry === "None") {
-        throw new Error("Unable to map command to category.");
+      data.price = parseInt(data.price);
+
+      console.log(data);
+      if (
+        !data.industry ||
+        data.industry === "None" ||
+        !data.price ||
+        data.price === 0 ||
+        data.action !== 1
+      ) {
+        throw new Error("Insufficient data to map command to action.");
       }
 
       if (data) {
         switch (data.action) {
           case 1:
             // user wants to add funds
-            this.setState({
-              response: {
-                ok: true,
-                message: `Added funds to ${data.industry}`
-              }
-            });
-          case 2:
-            // user wants to set funds for a category
-            this.setState({
-              response: {
-                ok: true,
-                message: `Set funds for ${
-                  data.industry
-                } at ${accounting.formatMoney(data.amount)}`
-              }
-            });
-          default:
+            const res = await this.props.addFundsWithAmountAndCategory(
+              data.price,
+              data.industry
+            );
+            console.log(res);
+            if (res && res.ok) {
+              this.setState({
+                isAnalyzing: false,
+                response: {
+                  ok: true,
+                  message: `Added ${accounting.formatMoney(data.price)} to ${
+                    data.industry
+                  }`
+                }
+              });
+            } else {
+              throw new Error("Unable to map command to action.");
+            }
         }
       }
     } catch (e) {
-      this.setState({ error: e });
+      this.setState({ isAnalyzing: false, error: e });
     }
   };
 
@@ -124,9 +134,8 @@ export default class VoiceRecognition extends React.Component {
         body: formData
       });
       const data = await response.json();
-      console.log(data.transcript);
+      this.setState({ command: data.transcript, isAnalyzing: true });
       this.analyzeStatement(data.transcript);
-      this.setState({ command: data.transcript });
     } catch (error) {
       console.log("There was an error reading file", error);
       this.stopRecording();
@@ -213,9 +222,17 @@ export default class VoiceRecognition extends React.Component {
   };
 
   render() {
-    const { isRecording, command, isFetching, error } = this.state;
+    const {
+      isRecording,
+      command,
+      isFetching,
+      isAnalyzing,
+      error,
+      response
+    } = this.state;
 
     if (error) {
+      console.log(error);
       return (
         <React.Fragment>
           <Modal
@@ -231,6 +248,35 @@ export default class VoiceRecognition extends React.Component {
                   <Text>
                     Something unexpected occurred. Please try voice input again.
                   </Text>
+                </Card.Content>
+              </Card>
+            </View>
+          </Modal>
+          <VoiceRecognitionGroup style={styles.fab}>
+            {isFetching && <ActivityIndicator style={{ marginRight: 8 }} />}
+            <FAB
+              icon={isRecording ? "stop" : "microphone"}
+              onPress={this.toggleRecording}
+            />
+          </VoiceRecognitionGroup>
+        </React.Fragment>
+      );
+    }
+
+    if (response) {
+      return (
+        <React.Fragment>
+          <Modal
+            visible={this.state.response}
+            onDismiss={() => this.setState({ response: null })}
+            dismissable={true}
+            contentContainerStyle={styles.flexContainer}
+          >
+            <View style={{ marginLeft: 16, marginRight: 16 }}>
+              <Card>
+                <Card.Title title="Success" />
+                <Card.Content>
+                  <Text>{response.message}</Text>
                 </Card.Content>
               </Card>
             </View>
@@ -276,7 +322,9 @@ export default class VoiceRecognition extends React.Component {
               />
             )}
           </AnimatedContainer>
-          {isFetching && <ActivityIndicator style={{ marginRight: 8 }} />}
+          {(isFetching || isAnalyzing) && (
+            <ActivityIndicator style={{ marginRight: 8 }} />
+          )}
           <FAB
             icon={isRecording ? "stop" : "microphone"}
             onPress={this.toggleRecording}

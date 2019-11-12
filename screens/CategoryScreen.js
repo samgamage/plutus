@@ -38,15 +38,24 @@ class CategoryScreen extends React.Component {
     const uid = await this.props.firebase.getCurrentUser();
 
     await this.props.firebase.category(uid, cid).on("value", snapshot => {
-      const category = snapshot.val();
-      // calculate budget from categories
+      const categoryObj = snapshot.val();
 
-      if (!category || !category.transactions) {
+      if (!categoryObj || !categoryObj.transactions) {
         this.setState({ loading: false, noTransactions: true });
         return;
       }
+      const category = {
+        ...categoryObj,
+        transactions: Object.keys(categoryObj.transactions).map(
+          key => categoryObj.transactions[key]
+        )
+      };
+      // calculate budget from categories
       let labels = category.transactions.map(t => t.date);
+      labels.length = labels.length < 4 ? labels.length : 4;
       let data = category.transactions.map(t => t.amount);
+      console.log(data);
+      data.length = data.length < 4 ? data.length : 4;
       const array = [];
       category.transactions.forEach(t => {
         array.push({ key: t.date, value: t.amount });
@@ -152,7 +161,9 @@ class CategoryScreen extends React.Component {
 
     return (
       <Root>
-        <ScrollView>
+        <ScrollView
+          style={{ flex: 1, height: Dimensions.get("window").height }}
+        >
           <Container>
             <H1 style={{ textAlign: "center", marginBottom: 8 }}>
               {this.state.category.name}
@@ -180,6 +191,7 @@ class CategoryScreen extends React.Component {
               height={220}
               yAxisLabel={"$"}
               fromZero
+              verticalLabelRotation={-45}
               chartConfig={{
                 backgroundGradientFrom: "#fff",
                 backgroundGradientTo: "#fff",
@@ -268,6 +280,7 @@ export default WrappedComponent;
 const Root = styled.View`
   flex: 1;
   background: #f0f3f5;
+  margin-bottom: 60px;
 `;
 
 const Subtitle = styled.Text`
@@ -277,11 +290,6 @@ const Subtitle = styled.Text`
   margin-left: 20px;
   margin-top: 10px;
   text-transform: uppercase;
-`;
-
-const RootContainer = styled.View`
-  margin-top: 16px;
-  margin-bottom: 16px;
 `;
 
 const Item = styled.View`

@@ -109,7 +109,6 @@ const TabNavigator = createBottomTabNavigator(
         position: "absolute",
         bottom: 0,
         left: 0,
-        height: 40,
         width: "100%",
         backgroundColor: "white",
         borderColor: "rgb(27, 42, 51)",

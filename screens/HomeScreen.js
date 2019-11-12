@@ -128,6 +128,11 @@ class HomeScreen extends React.PureComponent {
               transaction.category = snapshot.val();
             });
         });
+
+        transactionArray.sort((a, b) =>
+          moment(a.timestamp).isAfter(b.timestamp) ? -1 : 1
+        );
+        console.log(transactionArray);
         this.setState({
           totalSpent,
           currentTransactions: transactionArray.filter(
