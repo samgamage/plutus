@@ -1,15 +1,16 @@
 import app from "firebase";
 import { AsyncStorage } from "react-native";
+import config from "../config";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBAjR-ZH5OO_QsuANNnXw1NvCvvtpwgRjY",
-  authDomain: "jade-d10cb.firebaseapp.com",
-  databaseURL: "https://jade-d10cb.firebaseio.com",
-  projectId: "jade-d10cb",
-  storageBucket: "jade-d10cb.appspot.com",
-  messagingSenderId: "749378224473",
-  appId: "1:749378224473:web:1a26c849ad418bf8ab4c48",
-  measurementId: "G-GVYEDQ262M"
+  apiKey: cnfig.apiKey,
+  authDomain: config.authDomain,
+  databaseURL: config.databaseURL,
+  projectId: config.projectId,
+  storageBucket: config.storageBucket,
+  messagingSenderId: config.messagingSenderId,
+  appId: config.appId,
+  measurementId: config.measurementId
 };
 
 export default class Firebase {

@@ -14,7 +14,9 @@ import {
   Portal,
   Title
 } from "react-native-paper";
+import { SvgXml } from "react-native-svg";
 import styled from "styled-components";
+import icon from "../assets/icon.svg";
 import BudgetStatusBar from "../components/BudgetStatusBar";
 import Container from "../components/Container";
 import MoneyInput from "../components/MoneyInput";
@@ -92,6 +94,9 @@ class HomeScreen extends React.PureComponent {
             transaction.category = snapshot.val();
           });
       });
+      transactionArray.sort((a, b) =>
+        moment(a.timestamp).isAfter(b.timestamp) ? -1 : 1
+      );
       this.setState({
         totalSpent,
         currentTransactions: transactionArray.filter(
@@ -132,7 +137,6 @@ class HomeScreen extends React.PureComponent {
         transactionArray.sort((a, b) =>
           moment(a.timestamp).isAfter(b.timestamp) ? -1 : 1
         );
-        console.log(transactionArray);
         this.setState({
           totalSpent,
           currentTransactions: transactionArray.filter(
@@ -291,7 +295,7 @@ const WrappedComponent = withFirebase(HomeScreen);
 
 WrappedComponent.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <Text>Plutus</Text>,
+    headerTitle: () => <SvgXml width="24" height="24" xml={icon} />,
     headerRight: () => (
       <TouchableOpacity
         onPress={async () => {

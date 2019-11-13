@@ -6,9 +6,11 @@ import { Content, Tab, Tabs } from "native-base";
 import React from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { Button, HelperText, Menu, Title } from "react-native-paper";
+import { SvgXml } from "react-native-svg";
 import styled from "styled-components";
 import uuid from "uuid";
 import * as Yup from "yup";
+import icon from "../assets/icon.svg";
 import MoneyInput from "../components/MoneyInput";
 import VoiceRecognition from "../components/VoiceRecognition";
 import { withFirebase } from "../shared/FirebaseContext";
@@ -380,7 +382,7 @@ const WrappedComponent = withFirebase(AddScreen);
 
 WrappedComponent.navigationOptions = ({ navigation }) => ({
   headerMode: "screen",
-  headerTitle: () => <Text>Plutus</Text>,
+  headerTitle: () => <SvgXml width="24" height="24" xml={icon} />,
   headerLeft: () => (
     <TouchableOpacity
       onPress={() => navigation.goBack()}

@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     margin: 16,
     right: 0,
-    bottom: 70,
+    bottom: 80,
     flex: 1,
     alignItems: "center"
   }

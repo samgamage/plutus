@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import accounting from "accounting";
-import { H1, H2, H3, Text } from "native-base";
+import moment from "moment";
+import { H1, H2, H3 } from "native-base";
 import React from "react";
 import {
   Dimensions,
@@ -16,7 +17,9 @@ import {
   Portal,
   Title
 } from "react-native-paper";
+import { SvgXml } from "react-native-svg";
 import styled from "styled-components";
+import icon from "../assets/icon.svg";
 import Container from "../components/Container";
 import MoneyInput from "../components/MoneyInput";
 import { withFirebase } from "../shared/FirebaseContext";
@@ -46,16 +49,17 @@ class CategoryScreen extends React.Component {
       }
       const category = {
         ...categoryObj,
-        transactions: Object.keys(categoryObj.transactions).map(
-          key => categoryObj.transactions[key]
-        )
+        transactions: Object.keys(categoryObj.transactions)
+          .map(key => categoryObj.transactions[key])
+          .sort((a, b) => (moment(a.timestamp).isAfter(b.timestamp) ? -1 : 1))
       };
       // calculate budget from categories
       let labels = category.transactions.map(t => t.date);
-      labels.length = labels.length < 4 ? labels.length : 4;
+      labels.length = labels.length < 5 ? labels.length : 5;
       let data = category.transactions.map(t => t.amount);
       console.log(data);
-      data.length = data.length < 4 ? data.length : 4;
+      data.length = data.length < 5 ? data.length : 5;
+      data = data.reverse();
       const array = [];
       category.transactions.forEach(t => {
         array.push({ key: t.date, value: t.amount });
@@ -272,7 +276,7 @@ WrappedComponent.navigationOptions = ({ navigation }) => ({
       <Feather name="arrow-left" size={24} />
     </TouchableOpacity>
   ),
-  headerTitle: () => <Text>Plutus</Text>
+  headerTitle: () => <SvgXml width="24" height="24" xml={icon} />
 });
 
 export default WrappedComponent;
