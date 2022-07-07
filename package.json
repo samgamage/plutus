@@ -20,7 +20,7 @@
     "formik": "^2.0.1",
     "js-search": "^1.4.3",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "native-base": "^2.13.8",
     "porter-stemmer": "^0.9.1",
     "react": "16.8.3",
